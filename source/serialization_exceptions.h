@@ -19,6 +19,7 @@
 #include <boost/exception/exception.hpp>
 #include <boost/exception/all.hpp>
 #include <boost/throw_exception.hpp>
+#include <boost/cstdint.hpp>
 
 namespace binary_format
 {
@@ -50,7 +51,7 @@ class invalid_data : public virtual serialization_exception
 
 namespace detail
 {
-    typedef boost::error_info<struct tag_requested_this_many_bytes_more, size_t> errinfo_requested_this_many_bytes_more;
+    typedef boost::error_info<struct tag_requested_this_many_bytes_more, boost::uintmax_t> errinfo_requested_this_many_bytes_more;
 } // namespace detail
 
 } // namespace binary_format

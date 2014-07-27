@@ -10,6 +10,7 @@
 #include "endian_formatter.h"
 #include "const_formatter.h"
 #include "fixed_size_array_formatter.h"
+#include "inefficient_size_prefix_formatter.h"
 
 #include "VectorSerializer.h"
 #include "CoutSerializer.h"
@@ -73,13 +74,18 @@ int main(int argc, char* argv[])
 
     std::map<int, std::string> map2;
 
+    boost::uint8_t lola = 5;
+    boost::uint8_t lola2;
+
     VectorSaveSerializer vectorWriter;
     vectorWriter.serialize(map, mapFormat);
     vectorWriter.serialize< const_formatter< fixed_size_array_formatter< little_endian<4> > > >("MAGIC_STRING");
+    vectorWriter.serialize< inefficient_size_prefix_formatter< little_endian<1>, little_endian<4> > >(lola);
 
     VectorLoadSerializer vectorReader(vectorWriter.getData());
     vectorReader.serialize(map2, mapFormat);
     vectorReader.serialize< const_formatter< fixed_size_array_formatter< little_endian<4> > > >("MAGIC_STRING");
+    vectorReader.serialize< inefficient_size_prefix_formatter< little_endian<1>, little_endian<4> > >(lola2);
 
     return 0;
 }

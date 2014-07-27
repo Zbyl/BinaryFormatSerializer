@@ -25,12 +25,14 @@ public:
     template<typename Formatter, typename T>
     void save(const T& object, Formatter& formatter = Formatter())
     {
+        //assert(saving());
         formatter.save(*this, object);
     }
 
     template<typename Formatter, typename T>
     void load(T& object, Formatter& formatter = Formatter())
     {
+        //assert(loading());
         formatter.load(*this, object);
     }
 
