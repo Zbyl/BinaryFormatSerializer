@@ -25,9 +25,9 @@ using namespace binary_format;
 
 struct SimpleStruct
 {
-    std::string text;
     int number;
-    int number2;
+    std::string text;
+    std::map<int, std::string> map;
 };
 
 class simple_struct_formatter : public formatter_base<simple_struct_formatter>
@@ -35,23 +35,29 @@ class simple_struct_formatter : public formatter_base<simple_struct_formatter>
 public:
     void serialize(ISerializer& serializer, SimpleStruct& simpleStruct)
     {
-        serializer.serialize< string_formatter< little_endian<2> > >(simpleStruct.text);
+        /// syntax 1: binary format specified as template parameter
         serializer.serialize< little_endian<4> >(simpleStruct.number);
-        serializer.serialize< little_endian<1> >(simpleStruct.number2);
+        serializer.serialize< string_formatter< little_endian<2> > >(simpleStruct.text);
+
+        /// syntax 2: binary format specified as a function parameter (allows for stateful formatters)
+        ///             element count     key formatter            value formatter
+        map_formatter< little_endian<4>, little_endian<1>, string_formatter< little_endian<4> > > mapFormat;
+        serializer.serialize(simpleStruct.map, mapFormat);
     }
 };
 
-class SimpleClass
+void example()
 {
-    int number;
-    int number2;
-private:
-    friend void serialize_serializable(ISerializer& serializer, SimpleClass simpleClass)
-    {
-        serializer.serialize< little_endian<4> >(simpleClass.number);
-        serializer.serialize< little_endian<1> >(simpleClass.number2);
-    }
-};
+    // serialization
+    VectorSaveSerializer vectorWriter;
+    SimpleStruct simple;
+    vectorWriter.serialize<simple_struct_formatter>(simple);
+
+    // deserialization
+    VectorLoadSerializer vectorReader(vectorWriter.getData());
+    SimpleStruct simple2;
+    vectorWriter.serialize<simple_struct_formatter>(simple2);
+}
 
 int main(int argc, char* argv[])
 {

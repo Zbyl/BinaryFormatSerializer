@@ -10,7 +10,7 @@ Distributed under Apache License, Version 2.0 (http://www.apache.org/licenses/LI
 Example
 =======
 
-```c_cpp
+```cpp
 struct SimpleStruct
 {
     int number;
@@ -33,7 +33,6 @@ public:
         serializer.serialize(simpleStruct.map, mapFormat);
     }
 };
-
 
 void example()
 {
