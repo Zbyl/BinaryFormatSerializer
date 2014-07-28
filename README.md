@@ -19,6 +19,11 @@ This library is meant to solve two problems:
   - Declarative way of specifying the binary format is another feature that makes it easy to verify the code against the specification.
   - Unifying serialization and deserialization reduces the amout of code and eliminates the need to keep two functions in sync.
  
+Other goals:
+
+1. The serialization functions shouldn't need to be templatized on the serializer type.
+  - In boost::serialization you generally provide serialization function as a template on the 'Archive' type. This has many inconvenient implications related to inlining serialization code in the headers or providing explicit template specializations. There is no easy way to make the boost serialization function work for different archives and still not be a template.
+ 
 What this library will not provide:
 
 1. Versioning of the binary format.
@@ -84,3 +89,4 @@ Notes
 3. Helper classes implementing versioning would be a nice addition too.
 4. This library does not use asserts, even where they would make sense. Exceptions are thrown instead. This is because asserts are not overridable, and BOOST_ASSERT() has inconsistent behaviour in debug and release mode, depending on whether it was overriden by the user, or not. Once BOOST_ASSERT() is fixed I will probably use that.
 5. This library currently assumes a little endian machine. Once boost::endian library is available the code will be updated to use it.
+6. It would be a nice excersize to try to make ISerializer a concept for boost::poly or adobe::poly, instead of a polymorphic type.
