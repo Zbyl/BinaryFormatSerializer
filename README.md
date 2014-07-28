@@ -1,10 +1,10 @@
 BinaryFormatSerializer
 ======================
 
-BinaryFormatSerializer is a library for serializing data in arbitrary binary format.
+BinaryFormatSerializer is a library for serializing data in arbitrary binary format.  
 This is currently a prototype under development.
 
-Distributed under Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+Distributed under Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)  
 (c) 2014 Zbigniew Skowron, zbychs@gmail.com
 
 Rationale
@@ -24,7 +24,7 @@ What this library will not provide:
 1. Versioning of the binary format.
   - Since the library does not enforce any specific format, it also won't add any version tags. This is left for the user to implement is any way he chooses. Helper classes implementing versioning might be added in the future.
 2. Default formats for common types.
-  - The library provides formatters for common types, but it will not make them a default. The format will always have to be specified explicitly to make the code verifiable agains the format specification.
+  - The library provides formatters for common types, but it will not make them a default. The format will always have to be specified explicitly to make the code verifiable against the format specification.
 
 Competition
 ===========
