@@ -82,3 +82,4 @@ Notes
    This will change as soon as I'm able to use C++ 11 in my code.
 2. Google Protocol Buffers formatters would be a nice addition to this library.
 3. Helper classes implementing versioning would be a nice addition too.
+4. This library does not use asserts, even where they would make sense. Exceptions are thrown instead. This is because asserts are not overridable, and BOOST_ASSERT() has inconsistent behaviour in debug and release mode, depending on whether it was overriden by the user, or not. Once BOOST_ASSERT() is fixed I will probably use that.
