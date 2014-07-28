@@ -50,12 +50,12 @@ class simple_struct_formatter : public formatter_base<simple_struct_formatter>
 public:
     void serialize(ISerializer& serializer, SimpleStruct& simpleStruct)
     {
-        /// syntax 1: binary format specified as template parameter
+        /// syntax 1: binary format specified as a template parameter
         serializer.serialize< little_endian<4> >(simpleStruct.number);
         serializer.serialize< string_formatter< little_endian<2> > >(simpleStruct.text);
 
         /// syntax 2: binary format specified as a function parameter (allows for stateful formatters)
-        ///             element count     key formatter            value formatter
+        ///            count formatter     key formatter            value formatter
         map_formatter< little_endian<4>, little_endian<1>, string_formatter< little_endian<4> > > mapFormat;
         serializer.serialize(simpleStruct.map, mapFormat);
     }
