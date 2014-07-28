@@ -1,6 +1,8 @@
 // BinarySerializer.cpp : Defines the entry point for the console application.
 //
 
+// TODO: Base 128 Varint formatter and all of Google protocol buffers
+
 #include "ISerializer.h"
 
 #include "formatter_base.h"
@@ -28,7 +30,13 @@ struct SimpleStruct
     int number;
     std::string text;
     std::map<int, std::string> map;
+
 };
+
+bool operator==(SimpleStruct, SimpleStruct)
+{
+    return false;
+}
 
 class simple_struct_formatter : public formatter_base<simple_struct_formatter>
 {
@@ -56,7 +64,10 @@ void example()
     // deserialization
     VectorLoadSerializer vectorReader(vectorWriter.getData());
     SimpleStruct simple2;
-    vectorWriter.serialize<simple_struct_formatter>(simple2);
+    vectorReader.serialize<simple_struct_formatter>(simple2);
+
+    vectorWriter.serialize< const_formatter<simple_struct_formatter> >(simple);
+    vectorReader.serialize< const_formatter<simple_struct_formatter> >(simple2);
 }
 
 int main(int argc, char* argv[])

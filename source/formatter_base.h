@@ -5,7 +5,6 @@
 /// formatter_base.h
 ///
 /// This file contains formatter_base mixin class that provides save() and load() by the means of the serialize() method.
-/// NOTE: I think this class might misbehave when used for formatters that have child formatters. And maybe in other circumstances too.
 ///
 /// Distributed under Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 /// (c) 2014 Zbigniew Skowron, zbychs@gmail.com
@@ -17,6 +16,8 @@
 
 #include "ISerializer.h"
 
+#include <boost/type_traits/remove_const.hpp>
+
 namespace binary_format
 {
 
@@ -27,7 +28,7 @@ public:
     template<typename T>
     void save(TSerializer& serializer, const T& object)
     {
-        static_cast<Derived*>(this)->serialize(serializer, const_cast<T&>(object));
+        static_cast<Derived*>(this)->serialize(serializer, const_cast<boost::remove_const<T>::type&>(object));
     }
 
     template<typename T>

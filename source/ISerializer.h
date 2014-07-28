@@ -14,6 +14,8 @@
 #ifndef BinaryFormatSerializer_ISerializer_H
 #define BinaryFormatSerializer_ISerializer_H
 
+#include "serialization_exceptions.h"
+
 #include <boost/cstdint.hpp>
 
 namespace binary_format
@@ -22,20 +24,34 @@ namespace binary_format
 class ISerializer
 {
 public:
+    /// @brief Saves given object using specified formatter.
+    ///        Will throw serialization_exception if serializer is a loading serializer.
     template<typename Formatter, typename T>
     void save(const T& object, Formatter& formatter = Formatter())
     {
-        //assert(saving());
+        if (!saving())
+        {
+            BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("Can't save to a loading serializer."));
+        }
+
         formatter.save(*this, object);
     }
 
+    /// @brief Loads given object using specified formatter.
+    ///        Will throw serialization_exception if serializer is a saving serializer.
     template<typename Formatter, typename T>
     void load(T& object, Formatter& formatter = Formatter())
     {
-        //assert(loading());
+        if (!loading())
+        {
+            BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("Can't load from a saving serializer."));
+        }
+
         formatter.load(*this, object);
     }
 
+    /// @brief Serializes given object using specified formatter.
+    ///        Calls save() or load() depending on whether serializer if a saving or loading serializer.
     template<typename Formatter, typename T>
     void serialize(T& object, Formatter& formatter = Formatter())
     {
@@ -49,8 +65,10 @@ public:
         }
     }
 
+    /// @brief Returs true if serializer is a loading serializer.
     bool loading() { return !saving(); }
 
+    /// @brief Returs true if serializer is a saving serializer.
     virtual bool saving() = 0;
 
 public:
@@ -64,6 +82,7 @@ public:
         serializeData(data, size);
     }
 
+    /// @brief Serializes a buffer of bytes.
     virtual void serializeData(boost::uint8_t* data, size_t size) = 0;
 };
 

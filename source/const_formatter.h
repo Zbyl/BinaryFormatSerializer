@@ -70,8 +70,7 @@ public:
     template<typename ValueType>
     void load(ISerializer& serializer, const ValueType& expected_value)
     {
-        typedef boost::remove_const<ValueType>::type ncValueType;
-        ncValueType loaded_value;
+        boost::remove_const<ValueType>::type loaded_value;
         serializer.load(loaded_value, value_formatter);
         if (!detail::const_formatter_equals(loaded_value, expected_value))
         {

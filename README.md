@@ -44,6 +44,6 @@ void example()
     // deserialization
     VectorLoadSerializer vectorReader(vectorWriter.getData());
     SimpleStruct simple2;
-    vectorWriter.serialize<simple_struct_formatter>(simple2);
+    vectorReader.serialize<simple_struct_formatter>(simple2);
 }
 ```
