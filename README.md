@@ -83,3 +83,4 @@ Notes
 2. Google Protocol Buffers formatters would be a nice addition to this library.
 3. Helper classes implementing versioning would be a nice addition too.
 4. This library does not use asserts, even where they would make sense. Exceptions are thrown instead. This is because asserts are not overridable, and BOOST_ASSERT() has inconsistent behaviour in debug and release mode, depending on whether it was overriden by the user, or not. Once BOOST_ASSERT() is fixed I will probably use that.
+5. This library currently assumes a little endian machine. Once boost::endian library is available the code will be updated to use it.
