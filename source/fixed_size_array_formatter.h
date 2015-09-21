@@ -14,11 +14,21 @@
 #ifndef BinaryFormatSerializer_fixed_size_array_formatter_H
 #define BinaryFormatSerializer_fixed_size_array_formatter_H
 
+#include "unified_formatter_base.h"
+
+#include <boost/static_assert.hpp>
+#include <boost/utility/enable_if.hpp>
+#include <boost/type_traits/is_array.hpp>
+
 namespace binary_format
 {
 
-template<typename ValueFormatter>
-class fixed_size_array_formatter
+namespace detail
+{
+} // namespace detail
+
+template<typename ValueFormatter, int SpecificSize = -1>
+class fixed_size_array_formatter : public unified_formatter_base< fixed_size_array_formatter<ValueFormatter, SpecificSize> >
 {
     ValueFormatter value_formatter;
 
@@ -28,29 +38,56 @@ public:
     {
     }
 
+#if 0
     template<int Size, typename ValueType>
-    void save(ISerializer& serializer, const ValueType(&array)[Size])
+    void serialize(ISerializer& serializer, ValueType(&array)[Size]) const
     {
-        for (int i = 0; i < Size; ++i)
+        BOOST_STATIC_ASSERT(SpecificSize <= Size);
+        const int array_size = (SpecificSize == -1) ? Size : SpecificSize;
+        for (int i = 0; i < array_size; ++i)
         {
-            serializer.save(array[i], value_formatter);
+            serializer.serialize(array[i], value_formatter);
         }
     }
+#endif
 
-    template<int Size, typename ValueType>
-    void load(ISerializer& serializer, ValueType(&array)[Size])
+    template<typename ValueType, typename TSerializer>
+    void serialize(TSerializer& serializer, ValueType* array) const
     {
-        for (int i = 0; i < Size; ++i)
+        BOOST_STATIC_ASSERT(SpecificSize >= 0);
+        for (int i = 0; i < SpecificSize; ++i)
         {
-            serializer.load(array[i], value_formatter);
+            serializer.serialize(array[i], value_formatter);
         }
     }
 };
 
 template<typename ValueFormatter>
-fixed_size_array_formatter<ValueFormatter> create_fixed_size_array_formatter(ValueFormatter value_formatter = ValueFormatter())
+class fixed_size_array_formatter<ValueFormatter, -1> : public unified_formatter_base< fixed_size_array_formatter<ValueFormatter, -1> >
 {
-    return fixed_size_array_formatter<ValueFormatter>(value_formatter);
+    ValueFormatter value_formatter;
+
+public:
+    fixed_size_array_formatter(ValueFormatter value_formatter = ValueFormatter())
+        : value_formatter(value_formatter)
+    {
+    }
+
+    template<int Size, typename ValueType, typename TSerializer>
+    void serialize(TSerializer& serializer, ValueType(&array)[Size]) const
+    {
+        for (int i = 0; i < Size; ++i)
+        {
+            serializer.serialize(array[i], value_formatter);
+        }
+    }
+};
+
+
+template<typename ValueFormatter, int SpecificSize = -1>
+fixed_size_array_formatter<ValueFormatter, SpecificSize> create_fixed_size_array_formatter(ValueFormatter value_formatter = ValueFormatter())
+{
+    return fixed_size_array_formatter<ValueFormatter, SpecificSize>(value_formatter);
 }
 
 } // namespace binary_format

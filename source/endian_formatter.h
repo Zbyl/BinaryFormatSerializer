@@ -40,35 +40,35 @@ class endian_formatter
 public:
     /// @brief Stores given pod in endian_tag byte order.
     ///        Throws lossy_conversion if Size is not enough to represent actual run-time value of pod.
-    template<typename T>
-    void save(ISerializer& serializer, const T& pod)
+    template<typename T, typename TSerializer = ISerializer>
+    void save(TSerializer& serializer, const T& pod) const
     {
         BOOST_STATIC_ASSERT(boost::is_pod<T>::value);
 
-        const uint_of_size<sizeof(T)>::type* value = reinterpret_cast<const uint_of_size<sizeof(T)>::type*>(&pod);
-        uint_of_size<Size>::type resized_value = *value;
+        const typename uint_of_size<sizeof(T)>::type* value = reinterpret_cast<const typename uint_of_size<sizeof(T)>::type*>(&pod);
+        typename uint_of_size<Size>::type resized_value = static_cast<typename uint_of_size<Size>::type>(*value);
 
         // throw if conversion to sized_value was lossy
         if (resized_value != *value)
         {
-            BOOST_THROW_EXCEPTION((lossy_conversion() << detail::cant_store_type_in_this_number_of_bytes<Size, T>::errinfo(pod)));
+            BOOST_THROW_EXCEPTION((lossy_conversion() << typename detail::cant_store_type_in_this_number_of_bytes<Size, T>::errinfo(pod)));
         }
 
-        uint_of_size<Size>::type endian_shuffled_value = native_to<endian_tag>(resized_value);
+        typename uint_of_size<Size>::type endian_shuffled_value = native_to<endian_tag>(resized_value);
         serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&endian_shuffled_value), Size);
     }
 
     /// @brief Loads given pod from endian_tag byte order.
-    template<typename T>
-    void load(ISerializer& serializer, T& pod)
+    template<typename T, typename TSerializer = ISerializer>
+    void load(TSerializer& serializer, T& pod) const
     {
         BOOST_STATIC_ASSERT(boost::is_pod<T>::value);
 
-        uint_of_size<Size>::type endian_shuffled_value;
+        typename uint_of_size<Size>::type endian_shuffled_value;
         serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&endian_shuffled_value), Size);
 
-        uint_of_size<Size>::type resized_value = native_to<endian_tag>(endian_shuffled_value);
-        uint_of_size<sizeof(T)>::type* value = reinterpret_cast<uint_of_size<sizeof(T)>::type*>(&pod);
+        typename uint_of_size<Size>::type resized_value = native_to<endian_tag>(endian_shuffled_value);
+        typename uint_of_size<sizeof(T)>::type* value = reinterpret_cast<typename uint_of_size<sizeof(T)>::type*>(&pod);
         *value = resized_value;
     }
 };

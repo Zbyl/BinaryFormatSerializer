@@ -34,8 +34,8 @@ public:
     {
     }
 
-    template<typename KeyType, typename ValueType>
-    void save(ISerializer& serializer, const std::map<KeyType, ValueType>& map)
+    template<typename KeyType, typename ValueType, typename TSerializer>
+    void save(TSerializer& serializer, const std::map<KeyType, ValueType>& map) const
     {
         serializer.save(map.size(), size_formatter);
         for (auto& kv : map)
@@ -45,8 +45,8 @@ public:
         }
     }
 
-    template<typename KeyType, typename ValueType>
-    void load(ISerializer& serializer, std::map<KeyType, ValueType>& map)
+    template<typename KeyType, typename ValueType, typename TSerializer>
+    void load(TSerializer& serializer, std::map<KeyType, ValueType>& map) const
     {
         map.clear();
         size_t map_size;

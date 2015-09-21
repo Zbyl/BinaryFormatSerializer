@@ -53,7 +53,7 @@ public:
     /// @brief Serializes given object using specified formatter.
     ///        Calls save() or load() depending on whether serializer if a saving or loading serializer.
     template<typename Formatter, typename T>
-    void serialize(T& object, Formatter& formatter = Formatter())
+    void serialize(T& object, const Formatter& formatter = Formatter())
     {
         if (saving())
         {
@@ -84,6 +84,30 @@ public:
 
     /// @brief Serializes a buffer of bytes.
     virtual void serializeData(boost::uint8_t* data, size_t size) = 0;
+};
+
+template<typename TSerializer>
+class AnySerializer : public ISerializer
+{
+public:
+    AnySerializer(TSerializer serializer)
+        : serializer(serializer)
+    {
+    }
+
+private:
+    virtual bool saving()
+    {
+        return serializer.saving();
+    }
+
+    virtual void serializeData(boost::uint8_t* data, size_t size)
+    {
+        return serializer.serializeData(data, size);
+    }
+
+private:
+    TSerializer serializer;
 };
 
 } // namespace binary_format

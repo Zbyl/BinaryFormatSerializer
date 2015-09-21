@@ -32,8 +32,8 @@ public:
     {
     }
 
-    template<typename ValueType>
-    void save(ISerializer& serializer, const boost::optional<ValueType>& value)
+    template<typename ValueType, typename TSerializer>
+    void save(TSerializer& serializer, const boost::optional<ValueType>& value) const
     {
         serializer.save(value.is_initialized(), flag_formatter);
         if (value)
@@ -42,8 +42,8 @@ public:
         }
     }
 
-    template<typename ValueType>
-    void load(ISerializer& serializer, boost::optional<ValueType>& value)
+    template<typename ValueType, typename TSerializer>
+    void load(TSerializer& serializer, boost::optional<ValueType>& value) const
     {
         value.reset();
         bool value_flag;

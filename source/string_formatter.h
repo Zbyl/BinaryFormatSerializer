@@ -14,6 +14,8 @@
 #ifndef BinaryFormatSerializer_string_formatter_H
 #define BinaryFormatSerializer_string_formatter_H
 
+#include "ISerializer.h"
+
 #include <string>
 
 namespace binary_format
@@ -30,13 +32,15 @@ public:
     {
     }
 
-    void save(ISerializer& serializer, const std::string& string)
+    template<typename TSerializer>
+    void save(TSerializer& serializer, const std::string& string) const
     {
         serializer.save(string.length(), size_formatter);
         serializer.saveData(reinterpret_cast<const boost::uint8_t*>(string.c_str()), string.length());
     }
 
-    void load(ISerializer& serializer, std::string& string)
+    template<typename TSerializer>
+    void load(TSerializer& serializer, std::string& string) const
     {
         string.clear();
         size_t string_size;

@@ -14,16 +14,16 @@
 #ifndef BinaryFormatSerializer_object_formatter_H
 #define BinaryFormatSerializer_object_formatter_H
 
-#include "formatter_base.h"
+#include "unified_formatter_base.h"
 
 namespace binary_format
 {
 
-class object_formatter : public formatter_base<object_formatter>
+class object_formatter : public unified_formatter_base<object_formatter>
 {
 public:
-    template<typename T>
-    void serialize(ISerializer& serializer, T& object)
+    template<typename T, typename TSerializer>
+    void serialize(TSerializer& serializer, T& object)
     {
         object->serialize(serializer);
     }

@@ -51,7 +51,7 @@ class invalid_data : public virtual serialization_exception
 
 namespace detail
 {
-    typedef boost::error_info<struct tag_description, char*> errinfo_description;
+    typedef boost::error_info<struct tag_description, const char*> errinfo_description;
     typedef boost::error_info<struct tag_requested_this_many_bytes_more, boost::uintmax_t> errinfo_requested_this_many_bytes_more;
 } // namespace detail
 

@@ -27,7 +27,7 @@ namespace binary_format
 
 namespace detail
 {
-    uint_of_size<1>::type endian_shuffle(const uint_of_size<1>::type& value)
+    inline uint_of_size<1>::type endian_shuffle(const uint_of_size<1>::type& value)
     {
         return value;
     }

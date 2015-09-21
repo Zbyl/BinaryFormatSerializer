@@ -4,7 +4,7 @@
 ///
 /// shared_ptr_copy_formatter.h
 ///
-/// This file contains shared_ptr_copy_formatter that formats boost::shared_ptr as a flag field followed by the value.
+/// This file contains shared_ptr_copy_formatter that formats std::shared_ptr as a flag field followed by the value.
 /// NOTE: Every instance of a shared_ptr will be serialized as an independent copy (so the shared ownership will NOT be preserved).
 /// NOTE: Upon loading operator new will be used to create new instance of the pointed object.
 ///
@@ -16,7 +16,7 @@
 #ifndef BinaryFormatSerializer_shared_ptr_copy_formatter_H
 #define BinaryFormatSerializer_shared_ptr_copy_formatter_H
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 namespace binary_format
 {
@@ -34,8 +34,8 @@ public:
     {
     }
 
-    template<typename ValueType>
-    void save(ISerializer& serializer, const boost::shared_ptr<ValueType>& value)
+    template<typename ValueType, typename TSerializer>
+    void save(TSerializer& serializer, const std::shared_ptr<ValueType>& value) const
     {
         serializer.save(value.get() != NULL, flag_formatter);
         if (value)
@@ -44,8 +44,8 @@ public:
         }
     }
 
-    template<typename ValueType>
-    void load(ISerializer& serializer, boost::shared_ptr<ValueType>& value)
+    template<typename ValueType, typename TSerializer>
+    void load(TSerializer& serializer, std::shared_ptr<ValueType>& value) const
     {
         value.reset();
         bool value_flag;

@@ -1,11 +1,9 @@
 // BinarySerializer.cpp : Defines the entry point for the console application.
 //
 
-// TODO: Base 128 Varint formatter and all of Google protocol buffers
-
 #include "ISerializer.h"
 
-#include "formatter_base.h"
+#include "unified_formatter_base.h"
 #include "string_formatter.h"
 #include "map_formatter.h"
 #include "vector_formatter.h"
@@ -13,6 +11,8 @@
 #include "const_formatter.h"
 #include "fixed_size_array_formatter.h"
 #include "inefficient_size_prefix_formatter.h"
+#include "type_formatter.h"
+#include "any_formatter.h"
 
 #include "VectorSerializer.h"
 #include "CoutSerializer.h"
@@ -38,14 +38,15 @@ bool operator==(SimpleStruct, SimpleStruct)
     return false;
 }
 
-class simple_struct_formatter : public formatter_base<simple_struct_formatter>
+class simple_struct_formatter : public unified_formatter_base<simple_struct_formatter>
 {
 public:
-    void serialize(ISerializer& serializer, SimpleStruct& simpleStruct)
+    template<typename TSerializer>
+    void serialize(TSerializer& serializer, SimpleStruct& simpleStruct) const
     {
         /// syntax 1: binary format specified as a template parameter
-        serializer.serialize< little_endian<4> >(simpleStruct.number);
-        serializer.serialize< string_formatter< little_endian<2> > >(simpleStruct.text);
+        serializer.template serialize< little_endian<4> >(simpleStruct.number);
+        serializer.template serialize< string_formatter< little_endian<2> > >(simpleStruct.text);
 
         /// syntax 2: binary format specified as a function parameter (allows for stateful formatters)
         ///            count formatter     key formatter            value formatter
@@ -70,7 +71,7 @@ void example()
     vectorReader.serialize< const_formatter<simple_struct_formatter> >(simple2);
 }
 
-int main(int argc, char* argv[])
+int mainE(int argc, char* argv[])
 {
     map_formatter< little_endian<4>, little_endian<1>, string_formatter< little_endian<4> > > mapFormat;
 
@@ -90,17 +91,27 @@ int main(int argc, char* argv[])
                                 > >(map);
 
     std::map<int, std::string> map2;
+    std::map<int, std::string> map3;
+    std::map<int, std::string> map4;
+
+    type_formatter< std::map<int, std::string> > mapFormat2(mapFormat);
+
+    any_formatter<> mapFormat3(make_any_formatter< std::map<int, std::string> >(mapFormat));
 
     boost::uint8_t lola = 5;
     boost::uint8_t lola2;
 
     VectorSaveSerializer vectorWriter;
     vectorWriter.serialize(map, mapFormat);
+    vectorWriter.serialize(map, mapFormat2);
+    vectorWriter.serialize(map, mapFormat3);
     vectorWriter.serialize< const_formatter< fixed_size_array_formatter< little_endian<4> > > >("MAGIC_STRING");
     vectorWriter.serialize< inefficient_size_prefix_formatter< little_endian<1>, little_endian<4> > >(lola);
 
     VectorLoadSerializer vectorReader(vectorWriter.getData());
-    vectorReader.serialize(map2, mapFormat);
+    vectorReader.serialize(map2, mapFormat3);
+    vectorReader.serialize(map3, mapFormat);
+    vectorReader.serialize(map4, mapFormat2);
     vectorReader.serialize< const_formatter< fixed_size_array_formatter< little_endian<4> > > >("MAGIC_STRING");
     vectorReader.serialize< inefficient_size_prefix_formatter< little_endian<1>, little_endian<4> > >(lola2);
 

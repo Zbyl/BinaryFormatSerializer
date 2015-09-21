@@ -58,8 +58,8 @@ public:
     {
     }
 
-    template<typename ValueType>
-    void save(ISerializer& serializer, const ValueType& value)
+    template<typename ValueType, typename TSerializer>
+    void save(TSerializer& serializer, const ValueType& value) const
     {
         serializer.save(value, value_formatter);
     }
@@ -67,10 +67,10 @@ public:
     /// @brief Loads a value and verifies that it is equal to the provided one.
     ///        Throws invalid_data if the loaded value is not equal to the expected value.
     /// @note  Comparison is done by the means of "==" operator, and using boost::equal() for arrays.
-    template<typename ValueType>
-    void load(ISerializer& serializer, const ValueType& expected_value)
+    template<typename ValueType, typename TSerializer>
+    void load(TSerializer& serializer, const ValueType& expected_value) const
     {
-        boost::remove_const<ValueType>::type loaded_value;
+        typename boost::remove_const<ValueType>::type loaded_value;
         serializer.load(loaded_value, value_formatter);
         if (!detail::const_formatter_equals(loaded_value, expected_value))
         {
