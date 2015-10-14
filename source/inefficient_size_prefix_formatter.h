@@ -56,7 +56,7 @@ public:
         boost::uintmax_t byteCount;
         serializer.load(byteCount, size_formatter);
 
-        ScopedSerializer scopedSerializer(serializer, byteCount);
+        ScopedSerializer<TSerializer> scopedSerializer(serializer, byteCount);
         scopedSerializer.load(value, value_formatter);
         scopedSerializer.verifyAllBytesProcessed();
     }

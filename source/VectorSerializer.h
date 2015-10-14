@@ -23,7 +23,7 @@
 namespace binary_format
 {
 
-class VectorSaveSerializer : public ISerializer
+class VectorSaveSerializer : public SerializerMixin<VectorSaveSerializer>
 {
     std::vector<boost::uint8_t> buffer;
 public:
@@ -32,19 +32,19 @@ public:
         return buffer;
     }
 
-    virtual bool saving()
+    bool saving()
     {
         return true;
     }
 
 public:
-    virtual void serializeData(boost::uint8_t* data, size_t size)
+    void serializeData(boost::uint8_t* data, size_t size)
     {
         buffer.insert(buffer.end(), data, data + size);
     }
 };
 
-class VectorLoadSerializer : public ISerializer
+class VectorLoadSerializer : public SerializerMixin<VectorLoadSerializer>
 {
     const std::vector<boost::uint8_t>& buffer;
     size_t position;
@@ -55,13 +55,13 @@ public:
     {
     }
 
-    virtual bool saving()
+    bool saving()
     {
         return false;
     }
 
 public:
-    virtual void serializeData(boost::uint8_t* data, size_t size)
+    void serializeData(boost::uint8_t* data, size_t size)
     {
         if (position + size > buffer.size())
         {

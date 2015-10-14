@@ -21,17 +21,17 @@
 namespace binary_format
 {
 
-template<typename Derived, typename TSerializer = ISerializer>
+template<typename Derived>
 class unified_formatter_base
 {
 public:
-    template<typename T>
+    template<typename T, typename TSerializer>
     void save(TSerializer& serializer, const T& object) const
     {
         static_cast<const Derived*>(this)->serialize(serializer, const_cast<typename boost::remove_const<T>::type&>(object));
     }
 
-    template<typename T>
+    template<typename T, typename TSerializer>
     void load(TSerializer& serializer, T& object) const
     {
         static_cast<const Derived*>(this)->serialize(serializer, object);

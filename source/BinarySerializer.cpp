@@ -45,8 +45,8 @@ public:
     void serialize(TSerializer& serializer, SimpleStruct& simpleStruct) const
     {
         /// syntax 1: binary format specified as a template parameter
-        serializer.template serialize< little_endian<4> >(simpleStruct.number);
-        serializer.template serialize< string_formatter< little_endian<2> > >(simpleStruct.text);
+        binary_format::serialize< little_endian<4> >(serializer, simpleStruct.number);
+        binary_format::serialize< string_formatter< little_endian<2> > >(serializer, simpleStruct.text);
 
         /// syntax 2: binary format specified as a function parameter (allows for stateful formatters)
         ///            count formatter     key formatter            value formatter
@@ -94,24 +94,24 @@ int mainE(int argc, char* argv[])
     std::map<int, std::string> map3;
     std::map<int, std::string> map4;
 
-    type_formatter< std::map<int, std::string> > mapFormat2(mapFormat);
+    type_formatter<ISerializer, std::map<int, std::string> > mapFormat2(mapFormat);
 
-    any_formatter<> mapFormat3(make_any_formatter< std::map<int, std::string> >(mapFormat));
+    any_formatter<ISerializer> mapFormat3(make_any_formatter<ISerializer, std::map<int, std::string> >(mapFormat));
 
     boost::uint8_t lola = 5;
     boost::uint8_t lola2;
 
     VectorSaveSerializer vectorWriter;
     vectorWriter.serialize(map, mapFormat);
-    vectorWriter.serialize(map, mapFormat2);
-    vectorWriter.serialize(map, mapFormat3);
+    AnySerializer<VectorSaveSerializer>(vectorWriter).serialize(map, mapFormat2);
+    AnySerializer<VectorSaveSerializer>(vectorWriter).serialize(map, mapFormat3);
     vectorWriter.serialize< const_formatter< fixed_size_array_formatter< little_endian<4> > > >("MAGIC_STRING");
     vectorWriter.serialize< inefficient_size_prefix_formatter< little_endian<1>, little_endian<4> > >(lola);
 
     VectorLoadSerializer vectorReader(vectorWriter.getData());
-    vectorReader.serialize(map2, mapFormat3);
+    AnySerializer<VectorLoadSerializer>(vectorReader).serialize(map2, mapFormat3);
     vectorReader.serialize(map3, mapFormat);
-    vectorReader.serialize(map4, mapFormat2);
+    AnySerializer<VectorLoadSerializer>(vectorReader).serialize(map4, mapFormat2);
     vectorReader.serialize< const_formatter< fixed_size_array_formatter< little_endian<4> > > >("MAGIC_STRING");
     vectorReader.serialize< inefficient_size_prefix_formatter< little_endian<1>, little_endian<4> > >(lola2);
 

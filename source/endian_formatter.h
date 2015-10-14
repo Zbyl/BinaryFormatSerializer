@@ -17,6 +17,7 @@
 #include "uint_of_size.h"
 #include "endian_shuffle.h"
 #include "serialization_exceptions.h"
+#include "verbatim_formatter.h"
 
 #include <boost/static_assert.hpp>
 #include <boost/type_traits/is_pod.hpp>
@@ -84,6 +85,12 @@ template<int Size>
 class big_endian : public detail::endian_formatter<big_endian_tag, Size>
 {
 };
+
+/// @brief little_endian<sizeof(T)> will serialize T the same way as verbatim_formatter<sizeof(T)>.
+/// @note We assume a little endian machine here.
+template<typename T>
+struct is_verbatim_formatter< little_endian<sizeof(T)>, T > : public std::true_type
+{};
 
 } // namespace binary_format
 

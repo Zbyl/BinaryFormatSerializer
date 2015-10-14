@@ -15,6 +15,7 @@
 #define BinaryFormatSerializer_fixed_size_array_formatter_H
 
 #include "unified_formatter_base.h"
+#include "verbatim_formatter.h"
 
 #include <boost/static_assert.hpp>
 #include <boost/utility/enable_if.hpp>
@@ -27,8 +28,8 @@ namespace detail
 {
 } // namespace detail
 
-template<typename ValueFormatter, int SpecificSize = -1>
-class fixed_size_array_formatter : public unified_formatter_base< fixed_size_array_formatter<ValueFormatter, SpecificSize> >
+template<typename ValueFormatter, int ArraySize = -1>
+class fixed_size_array_formatter : public unified_formatter_base< fixed_size_array_formatter<ValueFormatter, ArraySize> >
 {
     ValueFormatter value_formatter;
 
@@ -42,8 +43,8 @@ public:
     template<int Size, typename ValueType>
     void serialize(ISerializer& serializer, ValueType(&array)[Size]) const
     {
-        BOOST_STATIC_ASSERT(SpecificSize <= Size);
-        const int array_size = (SpecificSize == -1) ? Size : SpecificSize;
+        BOOST_STATIC_ASSERT(ArraySize <= Size);
+        const int array_size = (ArraySize == -1) ? Size : ArraySize;
         for (int i = 0; i < array_size; ++i)
         {
             serializer.serialize(array[i], value_formatter);
@@ -54,8 +55,8 @@ public:
     template<typename ValueType, typename TSerializer>
     void serialize(TSerializer& serializer, ValueType* array) const
     {
-        BOOST_STATIC_ASSERT(SpecificSize >= 0);
-        for (int i = 0; i < SpecificSize; ++i)
+        BOOST_STATIC_ASSERT(ArraySize >= 0);
+        for (int i = 0; i < ArraySize; ++i)
         {
             serializer.serialize(array[i], value_formatter);
         }
@@ -84,11 +85,17 @@ public:
 };
 
 
-template<typename ValueFormatter, int SpecificSize = -1>
-fixed_size_array_formatter<ValueFormatter, SpecificSize> create_fixed_size_array_formatter(ValueFormatter value_formatter = ValueFormatter())
+template<typename ValueFormatter, int ArraySize = -1>
+fixed_size_array_formatter<ValueFormatter, ArraySize> create_fixed_size_array_formatter(ValueFormatter value_formatter = ValueFormatter())
 {
-    return fixed_size_array_formatter<ValueFormatter, SpecificSize>(value_formatter);
+    return fixed_size_array_formatter<ValueFormatter, ArraySize>(value_formatter);
 }
+
+
+/// @brief fixed_size_array_formatter<ValueFormatter, ArraySize> is a verbatim formatter if ValueFormatter is.
+template<typename ValueFormatter, int ArraySize, typename T>
+struct is_verbatim_formatter< fixed_size_array_formatter<ValueFormatter, ArraySize>, T > : public is_verbatim_formatter<ValueFormatter, T>
+{};
 
 } // namespace binary_format
 

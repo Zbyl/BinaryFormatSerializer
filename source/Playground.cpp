@@ -10,6 +10,8 @@
 #include "endian_formatter.h"
 #include "type_formatter.h"
 #include "any_formatter.h"
+#include "vector_formatter.h"
+#include "const_formatter.h"
 
 #include "VectorSerializer.h"
 
@@ -17,6 +19,17 @@
 #include <string>
 #include <map>
 #include <vector>
+
+#include "has_field.h"
+
+struct WithX { int X; };
+struct WithoutX { int Y; };
+GENERATE_HAS_FIELD(X);
+void ala()
+{
+    static_assert(has_field_X<WithX>::value == 1, "WithX should have X!");
+    static_assert(has_field_X<WithoutX>::value == 0, "WithoutX should not have X!");
+}
 
 using namespace binary_format;
 
@@ -109,9 +122,9 @@ int main(int argc, char* argv[])
     std::map<int, std::string> map3;
     std::map<int, std::string> map4;
 
-    type_formatter< std::map<int, std::string>, TempVectorSaveSerializer > mapFormat2(mapFormat);
+    type_formatter< TempVectorSaveSerializer, std::map<int, std::string> > mapFormat2(mapFormat);
 
-    any_formatter<> mapFormat3(make_any_formatter< std::map<int, std::string> >(mapFormat));
+    any_formatter<VectorLoadSerializer> mapFormat3(make_any_formatter<VectorLoadSerializer, std::map<int, std::string> >(mapFormat));
 
     TempVectorSaveSerializer vectorWriter;
     vectorWriter.serialize(map, mapFormat);
@@ -120,6 +133,21 @@ int main(int argc, char* argv[])
     VectorLoadSerializer vectorReader(vectorWriter.getData());
     vectorReader.serialize(map2, mapFormat3);
     vectorReader.serialize(map3, mapFormat);
+
+    std::vector<int> vector {1, 2, 3, 4, 5};
+
+    VectorSaveSerializer vectorWriter2;
+    serialize< vector_formatter< little_endian<1>, little_endian<4> > >(vectorWriter2, vector);
+    serialize< vector_formatter< little_endian<1>, little_endian<1> > >(vectorWriter2, vector);
+    serialize< vector_formatter< little_endian<1>, little_endian<1> > >(vectorWriter2, vector);
+
+    std::vector<int> vector2;
+    std::vector<int> vector3;
+    std::vector<char> vector4 {1, 2, 3, 4, 5};
+    VectorLoadSerializer vectorReader2(vectorWriter2.getData());
+    serialize< vector_formatter< little_endian<1>, little_endian<4> > >(vectorReader2, vector2);
+    serialize< vector_formatter< little_endian<1>, little_endian<1> > >(vectorReader2, vector3);
+    serialize< const_formatter< vector_formatter< little_endian<1>, little_endian<1> > > >(vectorReader2, vector4);
 
     return 0;
 }

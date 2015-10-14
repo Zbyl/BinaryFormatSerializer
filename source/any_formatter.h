@@ -24,12 +24,12 @@
 namespace binary_format
 {
 
-template<typename TSerializer = ISerializer>
+template<typename TSerializer>
 class any_formatter
 {
 public:
     /// @note The dummy parameter is necessary to be able to actually call this constructor, because
-    ///       there is no syntax for crating objects, that accept constructor template parameters.
+    ///       there is no syntax for creating objects, that accept constructor template parameters.
     ///       Use make_any_formatter() function to create any_formatters more conveniently.
     template<typename T, typename Formatter>
     any_formatter(T* dummy, const Formatter& formatter = Formatter())
@@ -90,10 +90,10 @@ private:
     std::unique_ptr<IAnyFormatter> anyFormatter;
 };
 
-template<typename T, typename Formatter>
-any_formatter<> make_any_formatter(const Formatter& formatter = Formatter())
+template<typename TSerializer, typename T, typename Formatter>
+any_formatter<TSerializer> make_any_formatter(const Formatter& formatter = Formatter())
 {
-    return any_formatter<>(static_cast<T*>(nullptr), formatter);
+    return any_formatter<TSerializer>(static_cast<T*>(nullptr), formatter);
 }
 
 } // namespace binary_format

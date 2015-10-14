@@ -16,6 +16,7 @@
 #define BinaryFormatSerializer_const_formatter_H
 
 #include "serialization_exceptions.h"
+#include "verbatim_formatter.h"
 
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/range/algorithm/equal.hpp>
@@ -91,6 +92,11 @@ const_formatter<ValueFormatter> create_const_formatter(ValueFormatter value_form
 {
     return const_formatter<ValueFormatter>(value_formatter);
 }
+
+/// @brief const_formatter<ValueFormatter> is a verbatim formatter if ValueFormatter is.
+template<typename ValueFormatter, typename T>
+struct is_verbatim_formatter< const_formatter<ValueFormatter>, T > : public is_verbatim_formatter<ValueFormatter, T>
+{};
 
 } // namespace binary_format
 

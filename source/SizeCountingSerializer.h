@@ -21,7 +21,7 @@
 namespace binary_format
 {
 
-class SizeCountingSerializer : public ISerializer
+class SizeCountingSerializer : public SerializerMixin<SizeCountingSerializer>
 {
     boost::uintmax_t byteCount;
 public:
@@ -36,13 +36,13 @@ public:
         return byteCount;
     }
 
-    virtual bool saving()
+    bool saving()
     {
         return true;
     }
 
 public:
-    virtual void serializeData(boost::uint8_t* data, size_t size)
+    void serializeData(boost::uint8_t* data, size_t size)
     {
         byteCount += size;
     }

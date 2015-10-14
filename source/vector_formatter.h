@@ -14,7 +14,10 @@
 #ifndef BinaryFormatSerializer_vector_formatter_H
 #define BinaryFormatSerializer_vector_formatter_H
 
+#include "verbatim_formatter.h"
+
 #include <vector>
+#include <type_traits>
 
 namespace binary_format
 {
@@ -33,27 +36,49 @@ public:
     }
 
     template<typename ValueType, typename TSerializer>
-    void save(TSerializer& serializer, const std::vector<ValueType>& vector) const
+    typename std::enable_if< !is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    save(TSerializer& serializer, const std::vector<ValueType>& vector) const
     {
         serializer.save(vector.size(), size_formatter);
-        for (auto& kv : map)
+        for (const auto& value : vector)
         {
-            serializer.save(kv.first, key_formatter);
-            serializer.save(kv.second, value_formatter);
+            serializer.save(value, value_formatter);
         }
     }
 
     template<typename ValueType, typename TSerializer>
-    void load(TSerializer& serializer, std::vector<ValueType>& vector) const
+    typename std::enable_if< is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    save(TSerializer& serializer, const std::vector<ValueType>& vector) const
     {
-        vector.clear();
+        serializer.save(vector.size(), size_formatter);
+        serializer.saveData(reinterpret_cast<const boost::uint8_t*>(vector.data()), vector.size() * sizeof(ValueType));
+    }
+
+    template<typename ValueType, typename TSerializer>
+    typename std::enable_if< !is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    load(TSerializer& serializer, std::vector<ValueType>& vector) const
+    {
         size_t vector_size;
         serializer.load(vector_size, size_formatter);
+
+        vector.clear();
         for (size_t i = 0; i < vector_size; ++i)
         {
             vector.push_back(ValueType());
             serializer.load(vector.back(), value_formatter);
         }
+    }
+
+    template<typename ValueType, typename TSerializer>
+    typename std::enable_if< is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    load(TSerializer& serializer, std::vector<ValueType>& vector) const
+    {
+        size_t vector_size;
+        serializer.load(vector_size, size_formatter);
+
+        vector.clear();
+        vector.resize(vector_size);
+        serializer.loadData(reinterpret_cast<boost::uint8_t*>(vector.data()), vector.size() * sizeof(ValueType));
     }
 };
 

@@ -21,7 +21,7 @@
 namespace binary_format
 {
 
-class CoutSerializer : public ISerializer
+class CoutSerializer : public SerializerMixin<CoutSerializer>
 {
     bool appendNewLines;
 public:
@@ -31,13 +31,14 @@ public:
         : appendNewLines(appendNewLines)
     {
     }
-    virtual bool saving()
+
+    bool saving()
     {
         return true;
     }
 
 public:
-    virtual void serializeData(boost::uint8_t* data, size_t size)
+    void serializeData(boost::uint8_t* data, size_t size)
     {
         for (size_t i = 0; i < size; ++i)
         {

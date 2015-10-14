@@ -22,13 +22,14 @@
 namespace binary_format
 {
 
-class ScopedSerializer : public ISerializer
+template<typename TSerializer>
+class ScopedSerializer : public SerializerMixin< ScopedSerializer<TSerializer> >
 {
-    ISerializer& serializer;
+    TSerializer& serializer;
     boost::uintmax_t byteLimit;
     boost::uintmax_t bytesProcessed;
 public:
-    ScopedSerializer(ISerializer& serializer, boost::uintmax_t byteLimit)
+    ScopedSerializer(TSerializer& serializer, boost::uintmax_t byteLimit)
         : serializer(serializer)
         , byteLimit(byteLimit)
         , bytesProcessed(0)

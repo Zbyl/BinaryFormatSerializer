@@ -23,7 +23,7 @@
 namespace binary_format
 {
 
-template<typename T, typename TSerializer = ISerializer>
+template<typename TSerializer, typename T>
 class type_formatter
 {
 public:
@@ -78,10 +78,10 @@ private:
     std::unique_ptr<ITypeFormatter> typeFormatter;
 };
 
-template<typename T, typename Formatter>
-type_formatter<T> make_type_formatter(const Formatter& formatter = Formatter())
+template<typename TSerializer, typename T, typename Formatter>
+type_formatter<TSerializer, T> make_type_formatter(const Formatter& formatter = Formatter())
 {
-    return type_formatter<T>(formatter);
+    return type_formatter<TSerializer, T>(formatter);
 }
 
 } // namespace binary_format
