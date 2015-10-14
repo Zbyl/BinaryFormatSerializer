@@ -73,7 +73,12 @@ public:
     void save(const T& object, Formatter&& formatter = Formatter())
     {
         Derived* derived = static_cast<Derived*>(this);
-        binary_format::save(*derived, object, std::forward<Formatter>(formatter));
+        if (!derived->saving())
+        {
+            BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("Can't save to a loading serializer."));
+        }
+
+        std::forward<Formatter>(formatter).save(*derived, object);
     }
 
     /// @brief Loads given object using specified formatter.
@@ -82,7 +87,12 @@ public:
     void load(T& object, Formatter&& formatter = Formatter())
     {
         Derived* derived = static_cast<Derived*>(this);
-        binary_format::load(*derived, object, std::forward<Formatter>(formatter));
+        if (!derived->loading())
+        {
+            BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("Can't load from a saving serializer."));
+        }
+
+        std::forward<Formatter>(formatter).load(*derived, object);
     }
 
     /// @brief Loads given object of given size using specified formatter.
@@ -107,11 +117,11 @@ public:
         Derived* derived = static_cast<Derived*>(this);
         if (derived->saving())
         {
-            derived->save(std::forward<T>(object), std::forward<Formatter>(formatter));
+            std::forward<Formatter>(formatter).save(*derived, std::forward<T>(object));
         }
         else
         {
-            derived->load(std::forward<T>(object), std::forward<Formatter>(formatter));
+            std::forward<Formatter>(formatter).load(*derived, std::forward<T>(object));
         }
     }
 
