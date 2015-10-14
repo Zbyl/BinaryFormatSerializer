@@ -62,7 +62,7 @@ public:
     template<typename ValueType, typename TSerializer>
     void save(TSerializer& serializer, const ValueType& value) const
     {
-        serializer.save(value, value_formatter);
+        value_formatter.save(serializer, value);
     }
 
     /// @brief Loads a value and verifies that it is equal to the provided one.
@@ -72,7 +72,7 @@ public:
     void load(TSerializer& serializer, const ValueType& expected_value) const
     {
         typename boost::remove_const<ValueType>::type loaded_value;
-        serializer.load(loaded_value, value_formatter);
+        value_formatter.load(serializer, loaded_value);
         if (!detail::const_formatter_equals(loaded_value, expected_value))
         {
             BOOST_THROW_EXCEPTION(invalid_data());

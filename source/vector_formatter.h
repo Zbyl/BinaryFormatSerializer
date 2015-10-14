@@ -39,10 +39,10 @@ public:
     typename std::enable_if< !is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
     save(TSerializer& serializer, const std::vector<ValueType>& vector) const
     {
-        serializer.save(vector.size(), size_formatter);
+        size_formatter.save(serializer, vector.size());
         for (const auto& value : vector)
         {
-            serializer.save(value, value_formatter);
+            value_formatter.save(serializer, value);
         }
     }
 
@@ -50,7 +50,7 @@ public:
     typename std::enable_if< is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
     save(TSerializer& serializer, const std::vector<ValueType>& vector) const
     {
-        serializer.save(vector.size(), size_formatter);
+        size_formatter.save(serializer, vector.size());
         serializer.saveData(reinterpret_cast<const boost::uint8_t*>(vector.data()), vector.size() * sizeof(ValueType));
     }
 
@@ -59,13 +59,13 @@ public:
     load(TSerializer& serializer, std::vector<ValueType>& vector) const
     {
         size_t vector_size;
-        serializer.load(vector_size, size_formatter);
+        size_formatter.load(serializer, vector_size);
 
         vector.clear();
         for (size_t i = 0; i < vector_size; ++i)
         {
             vector.push_back(ValueType());
-            serializer.load(vector.back(), value_formatter);
+            value_formatter.load(serializer, vector.back());
         }
     }
 
@@ -74,7 +74,7 @@ public:
     load(TSerializer& serializer, std::vector<ValueType>& vector) const
     {
         size_t vector_size;
-        serializer.load(vector_size, size_formatter);
+        size_formatter.load(serializer, vector_size);
 
         vector.clear();
         vector.resize(vector_size);

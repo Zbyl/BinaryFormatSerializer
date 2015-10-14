@@ -15,6 +15,7 @@
 #ifndef BinaryFormatSerializer_size_prefix_formatter_H
 #define BinaryFormatSerializer_size_prefix_formatter_H
 
+#include "ISeekable.h"
 #include "SizeCountingSerializer.h"
 #include "ScopedSerializer.h"
 
@@ -27,7 +28,9 @@ class size_prefix_formatter
     SizeFormatter size_formatter;
     ValueFormatter value_formatter;
 
+
 public:
+    /// @note size_formatter must always store the same number of bytes
     size_prefix_formatter(SizeFormatter size_formatter = SizeFormatter(), ValueFormatter value_formatter = ValueFormatter())
         : size_formatter(size_formatter)
         , value_formatter(value_formatter)
@@ -35,27 +38,39 @@ public:
     }
 
     template<typename ValueType, typename TSerializer>
-    void save(TSerializer& serializer, const ValueType& value) const
+    void save(TSerializer& serializer, const ValueType& value)
     {
-        SizeCountingSerializer sizeCountingSerializer;
-        sizeCountingSerializer.save(value, value_formatter);
+        offset_t initialPosition = serializer.position();
 
-        boost::uintmax_t byteCount = sizeCountingSerializer.getByteCount();
-        serializer.save(byteCount, size_formatter);
+        offset_t byteCount = 0;
+        size_formatter.save(serializer, byteCount);  // reserve space for storing byteCount
 
-        serializer.save(value, value_formatter);
+        offset_t dataPosition = serializer.position();  // position where data starts
+        value_formatter.save(serializer, value);
+        offset_t endPosition = serializer.position();  // position where data ends
+
+        byteCount = endPosition - dataPosition;
+        serializer.seek(initialPosition);
+        size_formatter.save(serializer, byteCount); // write actual byteCount
+
+        offset_t afterSizePosition = serializer.position();
+
+        if (afterSizePosition != dataPosition)
+        {
+            BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("size_formatter must always store the same number of bytes."));
+        }
     }
 
     /// @brief This method will verify that deserialization read exactly the number of bytes stored in the size field.
     ///        It will throw end_of_input when more data was attepted to be read, and invalid_data if not all data was read.
     template<typename ValueType, typename TSerializer>
-    void load(TSerializer& serializer, ValueType& value) const
+    void load(TSerializer& serializer, ValueType& value)
     {
-        boost::uintmax_t byteCount;
-        serializer.load(byteCount, size_formatter);
+        offset_t byteCount;
+        size_formatter.load(serializer, byteCount);
 
         ScopedSerializer scopedSerializer(serializer, byteCount);
-        scopedSerializer.load(value, value_formatter);
+        scopedSerializer.load(value, byteCount, value_formatter);
         scopedSerializer.verifyAllBytesProcessed();
     }
 };

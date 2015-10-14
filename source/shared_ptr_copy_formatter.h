@@ -37,10 +37,10 @@ public:
     template<typename ValueType, typename TSerializer>
     void save(TSerializer& serializer, const std::shared_ptr<ValueType>& value) const
     {
-        serializer.save(value.get() != NULL, flag_formatter);
+        flag_formatter.save(serializer, value.get() != NULL);
         if (value)
         {
-            serializer.save(*value, value_formatter);
+            value_formatter.save(serializer, *value);
         }
     }
 
@@ -49,11 +49,11 @@ public:
     {
         value.reset();
         bool value_flag;
-        serializer.load(value_flag, flag_formatter);
+        flag_formatter.load(serializer, value_flag);
         if (value_flag)
         {
             value.reset(new ValueType());
-            serializer.load(*value, value_formatter);
+            value_formatter.load(serializer, *value);
         }
     }
 };

@@ -37,11 +37,11 @@ public:
     template<typename KeyType, typename ValueType, typename TSerializer>
     void save(TSerializer& serializer, const std::map<KeyType, ValueType>& map) const
     {
-        serializer.save(map.size(), size_formatter);
+        size_formatter.save(serializer, map.size());
         for (auto& kv : map)
         {
-            serializer.save(kv.first, key_formatter);
-            serializer.save(kv.second, value_formatter);
+            key_formatter.save(serializer, kv.first);
+            value_formatter.save(serializer, kv.second);
         }
     }
 
@@ -50,12 +50,12 @@ public:
     {
         map.clear();
         size_t map_size;
-        serializer.load(map_size, size_formatter);
+        size_formatter.load(serializer, map_size);
         for (size_t i = 0; i < map_size; ++i)
         {
             KeyType key;
-            serializer.load(key, key_formatter);
-            serializer.load(map[key], value_formatter);
+            key_formatter.load(serializer, key);
+            value_formatter.load(serializer, map[key]);
         }
     }
 };

@@ -40,12 +40,12 @@ public:
     void save(TSerializer& serializer, const ValueType& value) const
     {
         SizeCountingSerializer sizeCountingSerializer;
-        sizeCountingSerializer.save(value, value_formatter);
+        value_formatter.save(sizeCountingSerializer, value);
 
         boost::uintmax_t byteCount = sizeCountingSerializer.getByteCount();
-        serializer.save(byteCount, size_formatter);
+        size_formatter.save(serializer, byteCount);
 
-        serializer.save(value, value_formatter);
+        value_formatter.save(serializer, value);
     }
 
     /// @brief This method will verify that deserialization read exactly the number of bytes stored in the size field.
@@ -54,10 +54,10 @@ public:
     void load(TSerializer& serializer, ValueType& value) const
     {
         boost::uintmax_t byteCount;
-        serializer.load(byteCount, size_formatter);
+        size_formatter.load(serializer, byteCount);
 
         ScopedSerializer<TSerializer> scopedSerializer(serializer, byteCount);
-        scopedSerializer.load(value, value_formatter);
+        value_formatter.load(scopedSerializer, value);
         scopedSerializer.verifyAllBytesProcessed();
     }
 };

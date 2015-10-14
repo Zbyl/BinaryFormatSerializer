@@ -35,7 +35,7 @@ public:
     template<typename TSerializer>
     void save(TSerializer& serializer, const std::string& string) const
     {
-        serializer.save(string.length(), size_formatter);
+        size_formatter.save(serializer, string.length());
         serializer.saveData(reinterpret_cast<const boost::uint8_t*>(string.c_str()), string.length());
     }
 
@@ -44,7 +44,7 @@ public:
     {
         string.clear();
         size_t string_size;
-        serializer.load(string_size, size_formatter);
+        size_formatter.load(serializer, string_size);
         if (string_size > 0)
         {
             std::vector<char> data(string_size);

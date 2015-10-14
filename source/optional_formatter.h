@@ -35,10 +35,10 @@ public:
     template<typename ValueType, typename TSerializer>
     void save(TSerializer& serializer, const boost::optional<ValueType>& value) const
     {
-        serializer.save(value.is_initialized(), flag_formatter);
+        flag_formatter.save(serializer, value.is_initialized());
         if (value)
         {
-            serializer.save(*value, value_formatter);
+            value_formatter.save(serializer, *value);
         }
     }
 
@@ -47,11 +47,11 @@ public:
     {
         value.reset();
         bool value_flag;
-        serializer.load(value_flag, flag_formatter);
+        flag_formatter.load(serializer, value_flag);
         if (value_flag)
         {
             value = ValueType();
-            serializer.load(*value, value_formatter);
+            value_formatter.load(serializer, *value);
         }
     }
 };
