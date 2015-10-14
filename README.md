@@ -22,7 +22,7 @@ This library is meant to solve two problems:
 Other goals:
 
 1. The serialization functions shouldn't need to be templatized on the serializer type.
-  - In boost::serialization you generally provide serialization function as a template on the 'Archive' type. This has many inconvenient implications related to inlining serialization code in the headers or providing explicit template specializations. There is no easy way to make the boost serialization function work for different archives and still not be a template.
+  - In boost::serialization you generally provide serialization function as a template on the 'Archive' type. This has many inconvenient implications related to inlining serialization code in the headers or providing explicit template specializations. There is no easy way to make the boost serialization function work for different archives and still not be a template. The reason for this is that 'Archive' in boost::serialization defines both the storage manipulation (i.e. saveBinary() function) and format definitions (void save(T&) functions). Separating those two aspects (into 'serializers' and 'formatters') makes BinaryFormatSerializer quite a bit more flexible.
  
 What this library will not provide:
 
@@ -83,10 +83,10 @@ void example()
 Notes
 =====
 
-1. This library uses boost where standard C++ 11 would suffice. This is done because I need to support C++ 03.
-   This will change as soon as I'm able to use C++ 11 in my code.
+1. This library uses boost where standard C++ 11 would suffice. This was done because I needed to support C++ 03.
+   I am slowly migrating the code to use C++ 11.
 2. Google Protocol Buffers formatters would be a nice addition to this library.
 3. Helper classes implementing versioning would be a nice addition too.
 4. This library does not use asserts, even where they would make sense. Exceptions are thrown instead. This is because asserts are not overridable, and BOOST_ASSERT() has inconsistent behaviour in debug and release mode, depending on whether it was overriden by the user, or not. Once BOOST_ASSERT() is fixed I will probably use that.
 5. This library currently assumes a little endian machine. Once boost::endian library is available the code will be updated to use it.
-6. It would be a nice excersize to try to make ISerializer a concept for boost::poly or adobe::poly, instead of a polymorphic type.
+6. It would be a nice exercise to try to make ISerializer a concept for boost::poly or adobe::poly, instead of a polymorphic type. This is partially done now, by making serializers non-polymorphic, and providing a polymorphic AnySerializer<>.
