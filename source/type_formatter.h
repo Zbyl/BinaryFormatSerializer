@@ -28,7 +28,7 @@ class type_formatter
 {
 public:
     template<typename Formatter>
-    type_formatter(const Formatter& formatter = Formatter())
+    explicit type_formatter(const Formatter& formatter = Formatter())
         : typeFormatter(new TypeFormatter<Formatter>(formatter))
     {
     }
@@ -56,7 +56,7 @@ private:
     class TypeFormatter : public ITypeFormatter
     {
     public:
-        TypeFormatter(const Formatter& formatter = Formatter())
+        explicit TypeFormatter(const Formatter& formatter = Formatter())
             : formatter(formatter)
         {}
 

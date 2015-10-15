@@ -27,31 +27,43 @@ namespace binary_format
 
 namespace detail
 {
-    inline uint_of_size<1>::type endian_shuffle(const uint_of_size<1>::type& value)
+
+template<int Size>
+struct endian_helper;
+
+template<>
+struct endian_helper<1>
+{
+    static uint_of_size<1>::type endian_shuffle(const uint_of_size<1>::type& value)
     {
         return value;
     }
+};
 
-    template<int Size>
-    typename uint_of_size<Size>::type endian_shuffle(const typename uint_of_size<Size>::type& value)
+template<int Size>
+struct endian_helper
+{
+    static typename uint_of_size<Size>::type endian_shuffle(const typename uint_of_size<Size>::type& value)
     {
         BOOST_STATIC_ASSERT(Size % 2 == 0);
 
         typename uint_of_size<Size>::type result;
 
-        typename uint_of_size<Size / 2>::type* value_half_ptr = reinterpret_cast<typename uint_of_size<Size / 2>::type*>(&value);
+        const typename uint_of_size<Size / 2>::type* value_half_ptr = reinterpret_cast<const typename uint_of_size<Size / 2>::type*>(&value);
         typename uint_of_size<Size / 2>::type* result_half_ptr = reinterpret_cast<typename uint_of_size<Size / 2>::type*>(&result);
 
-        result[0] = endian_shuffle<Size / 2>(value[1]);
-        result[1] = endian_shuffle<Size / 2>(value[0]);
+        result_half_ptr[0] = endian_helper<Size / 2>::endian_shuffle(value_half_ptr[1]);
+        result_half_ptr[1] = endian_helper<Size / 2>::endian_shuffle(value_half_ptr[0]);
 
         return result;
     }
 
-    template<int N>
-    struct is_power_of_two {
-        enum { value = (N > 1) & !(N & (N - 1)) };
-    };
+};
+
+template<int N>
+struct is_power_of_two {
+    enum { value = (N > 0) && !(N & (N - 1)) };
+};
 
 } // namespace detail
 
@@ -60,7 +72,7 @@ T endian_shuffle(const T& value)
 {
     BOOST_STATIC_ASSERT(boost::is_pod<T>::value);
     BOOST_STATIC_ASSERT(detail::is_power_of_two< sizeof(T) >::value);
-    typename uint_of_size<sizeof(T)>::type result = detail::endian_shuffle(reinterpret_cast<const typename uint_of_size<sizeof(T)>::type&>(value));
+    typename uint_of_size<sizeof(T)>::type result = detail::endian_helper<sizeof(T)>::endian_shuffle(reinterpret_cast<const typename uint_of_size<sizeof(T)>::type&>(value));
     return reinterpret_cast<const T&>(result);
 }
 
@@ -68,14 +80,14 @@ template<typename T>
 T native_to_little_endian(const T& value)
 {
     BOOST_STATIC_ASSERT(boost::is_pod<T>::value);
-    //BOOST_STATIC_ASSERT(detail::is_power_of_two< sizeof(T) >::value);
+    BOOST_STATIC_ASSERT(detail::is_power_of_two< sizeof(T) >::value);
     return value;
 }
 
 template<typename T>
 T native_to_big_endian(const T& value)
 {
-    return endian_shuffle(reinterpret_cast<const typename uint_of_size<1>::type&>(value));
+    return endian_shuffle(reinterpret_cast<const typename uint_of_size<sizeof(T)>::type&>(value));
 }
 
 template<typename T>

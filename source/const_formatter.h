@@ -54,7 +54,7 @@ class const_formatter
     ValueFormatter value_formatter;
 
 public:
-    const_formatter(ValueFormatter value_formatter = ValueFormatter())
+    explicit const_formatter(ValueFormatter value_formatter = ValueFormatter())
         : value_formatter(value_formatter)
     {
     }

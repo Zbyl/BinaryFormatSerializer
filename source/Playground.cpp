@@ -140,6 +140,8 @@ int main(int argc, char* argv[])
     serialize< vector_formatter< little_endian<1>, little_endian<4> > >(vectorWriter2, vector);
     serialize< vector_formatter< little_endian<1>, little_endian<1> > >(vectorWriter2, vector);
     serialize< vector_formatter< little_endian<1>, little_endian<1> > >(vectorWriter2, vector);
+    save< big_endian<4> >(vectorWriter2, 0x12345678);
+    save< big_endian<4> >(vectorWriter2, 0x12345678);
 
     std::vector<int> vector2;
     std::vector<int> vector3;
@@ -148,6 +150,8 @@ int main(int argc, char* argv[])
     serialize< vector_formatter< little_endian<1>, little_endian<4> > >(vectorReader2, vector2);
     serialize< vector_formatter< little_endian<1>, little_endian<1> > >(vectorReader2, vector3);
     serialize< const_formatter< vector_formatter< little_endian<1>, little_endian<1> > > >(vectorReader2, vector4);
+    serialize< const_formatter< big_endian<4> > >(vectorReader2, 0x12345678);
+    load< const_formatter< little_endian<4> > >(vectorReader2, 0x78563412);
 
     return 0;
 }

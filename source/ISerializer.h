@@ -16,6 +16,8 @@
 
 #include "serialization_exceptions.h"
 
+#include <utility>
+
 #include <boost/cstdint.hpp>
 
 namespace binary_format
@@ -37,14 +39,14 @@ void save(TSerializer& serializer, const T& object, Formatter&& formatter = Form
 /// @brief Loads given object using specified serializer and formatter.
 ///        Will throw serialization_exception if serializer is a saving serializer.
 template<typename Formatter, typename T, typename TSerializer>
-void load(TSerializer& serializer, T& object, Formatter&& formatter = Formatter())
+void load(TSerializer& serializer, T&& object, Formatter&& formatter = Formatter())
 {
     if (!serializer.loading())
     {
         BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("Can't load from a saving serializer."));
     }
 
-    std::forward<Formatter>(formatter).load(serializer, object);
+    std::forward<Formatter>(formatter).load(serializer, std::forward<T>(object));
 }
 
 /// @brief Serializes given object using specified serializer and formatter.
@@ -84,7 +86,7 @@ public:
     /// @brief Loads given object using specified formatter.
     ///        Will throw serialization_exception if serializer is a saving serializer.
     template<typename Formatter, typename T>
-    void load(T& object, Formatter&& formatter = Formatter())
+    void load(T&& object, Formatter&& formatter = Formatter())
     {
         Derived* derived = static_cast<Derived*>(this);
         if (!derived->loading())
@@ -92,13 +94,13 @@ public:
             BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("Can't load from a saving serializer."));
         }
 
-        std::forward<Formatter>(formatter).load(*derived, object);
+        std::forward<Formatter>(formatter).load(*derived, std::forward<T>(object));
     }
 
     /// @brief Loads given object of given size using specified formatter.
     ///        Will throw serialization_exception if serializer is a saving serializer.
     template<typename Formatter, typename T, typename TSize>
-    void load(T& object, TSize byteSize, Formatter&& formatter = Formatter())
+    void load(T&& object, TSize byteSize, Formatter&& formatter = Formatter())
     {
         if (!loading())
         {
@@ -106,7 +108,7 @@ public:
         }
 
         Derived* derived = static_cast<Derived*>(this);
-        std::forward<Formatter>(formatter).load(*derived, byteSize, object);
+        std::forward<Formatter>(formatter).load(*derived, byteSize, std::forward<T>(object));
     }
 
     /// @brief Serializes given object using specified formatter.
@@ -166,7 +168,7 @@ template<typename TSerializer>
 class AnySerializer : public ISerializer
 {
 public:
-    AnySerializer(TSerializer serializer)
+    explicit AnySerializer(TSerializer serializer)
         : serializer(serializer)
     {
     }

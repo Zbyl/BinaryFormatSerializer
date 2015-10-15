@@ -69,7 +69,7 @@ class fixed_size_array_formatter<ValueFormatter, -1> : public unified_formatter_
     ValueFormatter value_formatter;
 
 public:
-    fixed_size_array_formatter(ValueFormatter value_formatter = ValueFormatter())
+    explicit fixed_size_array_formatter(ValueFormatter value_formatter = ValueFormatter())
         : value_formatter(value_formatter)
     {
     }

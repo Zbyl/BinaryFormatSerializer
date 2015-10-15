@@ -27,7 +27,7 @@ class CoutSerializer : public SerializerMixin<CoutSerializer>
 public:
     /// @brief Constructs the serializer.
     /// @param appendNewLines    If true the serializer will add a new line after every call to serializeData(). Useful for debugging of formatters.
-    CoutSerializer(bool appendNewLines = false)
+    explicit CoutSerializer(bool appendNewLines = false)
         : appendNewLines(appendNewLines)
     {
     }

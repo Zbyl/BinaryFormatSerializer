@@ -32,7 +32,7 @@ public:
     ///       there is no syntax for creating objects, that accept constructor template parameters.
     ///       Use make_any_formatter() function to create any_formatters more conveniently.
     template<typename T, typename Formatter>
-    any_formatter(T* dummy, const Formatter& formatter = Formatter())
+    explicit any_formatter(T* dummy, const Formatter& formatter = Formatter())
         : anyFormatter(new AnyFormatter<T, Formatter>(formatter))
     {
     }
@@ -68,7 +68,7 @@ private:
     class AnyFormatter : public IAnyFormatter
     {
     public:
-        AnyFormatter(const Formatter& formatter = Formatter())
+        explicit AnyFormatter(const Formatter& formatter = Formatter())
             : formatter(formatter)
         {}
 

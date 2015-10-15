@@ -27,7 +27,7 @@ class string_formatter
     SizeFormatter size_formatter;
 
 public:
-    string_formatter(SizeFormatter size_formatter = SizeFormatter())
+    explicit string_formatter(SizeFormatter size_formatter = SizeFormatter())
         : size_formatter(size_formatter)
     {
     }

@@ -49,7 +49,7 @@ class VectorLoadSerializer : public SerializerMixin<VectorLoadSerializer>
     const std::vector<boost::uint8_t>& buffer;
     size_t position;
 public:
-    VectorLoadSerializer(const std::vector<boost::uint8_t>& buffer)
+    explicit VectorLoadSerializer(const std::vector<boost::uint8_t>& buffer)
         : buffer(buffer)
         , position(0)
     {
