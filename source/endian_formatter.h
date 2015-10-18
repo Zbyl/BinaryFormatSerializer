@@ -5,6 +5,7 @@
 /// endian_formatter.h
 ///
 /// This file contains little_endian and big_endian formatters for POD types.
+/// Integral types and enums can be stored on different number of bytes than their size.
 ///
 /// Distributed under Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 /// (c) 2014 Zbigniew Skowron, zbychs@gmail.com
@@ -14,13 +15,13 @@
 #ifndef BinaryFormatSerializer_endian_formatter_H
 #define BinaryFormatSerializer_endian_formatter_H
 
-#include "uint_of_size.h"
+#include "integer_of_size.h"
 #include "endian_shuffle.h"
 #include "serialization_exceptions.h"
 #include "verbatim_formatter.h"
 
-#include <boost/static_assert.hpp>
-#include <boost/type_traits/is_pod.hpp>
+#include <type_traits>
+
 #include <boost/exception/error_info.hpp>
 
 namespace binary_format
@@ -42,35 +43,62 @@ public:
     /// @brief Stores given pod in endian_tag byte order.
     ///        Throws lossy_conversion if Size is not enough to represent actual run-time value of pod.
     template<typename T, typename TSerializer = ISerializer>
-    void save(TSerializer& serializer, const T& pod) const
+    typename std::enable_if< std::is_integral<T>::value || std::is_enum<T>::value >::type 
+    save(TSerializer& serializer, const T& pod) const
     {
-        BOOST_STATIC_ASSERT(boost::is_pod<T>::value);
+        static_assert(std::is_pod<T>::value, "Type must be a pod.");
 
-        const typename uint_of_size<sizeof(T)>::type* value = reinterpret_cast<const typename uint_of_size<sizeof(T)>::type*>(&pod);
-        typename uint_of_size<Size>::type resized_value = static_cast<typename uint_of_size<Size>::type>(*value);
+        using SizedInt = typename integer_of_size<std::is_signed<T>::value, Size>::type;
+        SizedInt resized_value = static_cast<SizedInt>(pod);
 
         // throw if conversion to sized_value was lossy
-        if (resized_value != *value)
+        if (static_cast<T>(resized_value) != pod)
         {
             BOOST_THROW_EXCEPTION((lossy_conversion() << typename detail::cant_store_type_in_this_number_of_bytes<Size, T>::errinfo(pod)));
         }
 
-        typename uint_of_size<Size>::type endian_shuffled_value = native_to<endian_tag>(resized_value);
+        SizedInt endian_shuffled_value = native_to<endian_tag>(resized_value);
         serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&endian_shuffled_value), Size);
     }
 
     /// @brief Loads given pod from endian_tag byte order.
     template<typename T, typename TSerializer = ISerializer>
-    void load(TSerializer& serializer, T& pod) const
+    typename std::enable_if< std::is_integral<T>::value || std::is_enum<T>::value >::type 
+    load(TSerializer& serializer, T& pod) const
     {
-        BOOST_STATIC_ASSERT(boost::is_pod<T>::value);
+        static_assert(std::is_pod<T>::value, "Type must be a pod.");
 
-        typename uint_of_size<Size>::type endian_shuffled_value;
+        using SizedInt = typename integer_of_size<std::is_signed<T>::value, Size>::type;
+        SizedInt endian_shuffled_value;
         serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&endian_shuffled_value), Size);
 
-        typename uint_of_size<Size>::type resized_value = native_to<endian_tag>(endian_shuffled_value);
-        typename uint_of_size<sizeof(T)>::type* value = reinterpret_cast<typename uint_of_size<sizeof(T)>::type*>(&pod);
-        *value = resized_value;
+        SizedInt resized_value = native_to<endian_tag>(endian_shuffled_value);
+        pod = static_cast<T>(resized_value);
+    }
+
+    /// @brief Stores given pod in endian_tag byte order.
+    template<typename T, typename TSerializer = ISerializer>
+    typename std::enable_if< !(std::is_integral<T>::value || std::is_enum<T>::value) >::type 
+    save(TSerializer& serializer, const T& pod) const
+    {
+        static_assert(std::is_pod<T>::value, "Type must be a pod.");
+        static_assert(sizeof(T) == Size, "Only integral types can be stored on different number of bytes than their size.");
+
+        T shuffled_value = native_to<endian_tag>(pod);
+        serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&shuffled_value), Size);
+    }
+
+    /// @brief Loads given pod from endian_tag byte order.
+    template<typename T, typename TSerializer = ISerializer>
+    typename std::enable_if< !(std::is_integral<T>::value || std::is_enum<T>::value) >::type 
+    load(TSerializer& serializer, T& pod) const
+    {
+        static_assert(std::is_pod<T>::value, "Type must be a pod.");
+        static_assert(sizeof(T) == Size, "Only integral types can be loaded from different number of bytes than their size.");
+
+        T shuffled_value;
+        serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&shuffled_value), Size);
+        pod = native_to<endian_tag>(shuffled_value);
     }
 };
 

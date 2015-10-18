@@ -17,10 +17,8 @@
 #ifndef BinaryFormatSerializer_endian_shuffle_H
 #define BinaryFormatSerializer_endian_shuffle_H
 
-#include "uint_of_size.h"
-
-#include <boost/static_assert.hpp>
-#include <boost/type_traits/is_pod.hpp>
+#include <algorithm>
+#include <type_traits>
 
 namespace binary_format
 {
@@ -28,37 +26,16 @@ namespace binary_format
 namespace detail
 {
 
-template<int Size>
-struct endian_helper;
-
-template<>
-struct endian_helper<1>
+/// @brief This function reverses the order of bytes in a value.
+///        Value must be a pod.
+///        This function is compatible with strict aliasing rules.
+template<typename T>
+void endian_shuffle(T& value)
 {
-    static uint_of_size<1>::type endian_shuffle(const uint_of_size<1>::type& value)
-    {
-        return value;
-    }
-};
-
-template<int Size>
-struct endian_helper
-{
-    static typename uint_of_size<Size>::type endian_shuffle(const typename uint_of_size<Size>::type& value)
-    {
-        BOOST_STATIC_ASSERT(Size % 2 == 0);
-
-        typename uint_of_size<Size>::type result;
-
-        const typename uint_of_size<Size / 2>::type* value_half_ptr = reinterpret_cast<const typename uint_of_size<Size / 2>::type*>(&value);
-        typename uint_of_size<Size / 2>::type* result_half_ptr = reinterpret_cast<typename uint_of_size<Size / 2>::type*>(&result);
-
-        result_half_ptr[0] = endian_helper<Size / 2>::endian_shuffle(value_half_ptr[1]);
-        result_half_ptr[1] = endian_helper<Size / 2>::endian_shuffle(value_half_ptr[0]);
-
-        return result;
-    }
-
-};
+    static_assert(std::is_pod<T>::value, "Type must be a pod.");
+    char* valueBytes = reinterpret_cast<char*>(&value);
+    std::reverse(valueBytes, valueBytes + sizeof(T));
+}
 
 template<int N>
 struct is_power_of_two {
@@ -70,24 +47,21 @@ struct is_power_of_two {
 template<typename T>
 T endian_shuffle(const T& value)
 {
-    BOOST_STATIC_ASSERT(boost::is_pod<T>::value);
-    BOOST_STATIC_ASSERT(detail::is_power_of_two< sizeof(T) >::value);
-    typename uint_of_size<sizeof(T)>::type result = detail::endian_helper<sizeof(T)>::endian_shuffle(reinterpret_cast<const typename uint_of_size<sizeof(T)>::type&>(value));
-    return reinterpret_cast<const T&>(result);
+    T shuffled = value;
+    detail::endian_shuffle(shuffled);
+    return shuffled;
 }
 
 template<typename T>
 T native_to_little_endian(const T& value)
 {
-    BOOST_STATIC_ASSERT(boost::is_pod<T>::value);
-    BOOST_STATIC_ASSERT(detail::is_power_of_two< sizeof(T) >::value);
     return value;
 }
 
 template<typename T>
 T native_to_big_endian(const T& value)
 {
-    return endian_shuffle(reinterpret_cast<const typename uint_of_size<sizeof(T)>::type&>(value));
+    return endian_shuffle(value);
 }
 
 template<typename T>

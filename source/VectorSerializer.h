@@ -68,7 +68,7 @@ public:
             BOOST_THROW_EXCEPTION(end_of_input() << detail::errinfo_requested_this_many_bytes_more(position + size - buffer.size()));
         }
 
-        std::copy(buffer.begin() + position, buffer.begin() + position + size, data);
+        std::copy_n(buffer.begin() + position, size, data);
         position += size;
     }
 };
