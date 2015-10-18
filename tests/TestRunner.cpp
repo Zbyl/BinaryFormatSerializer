@@ -23,16 +23,6 @@ TEST_F(FooTest, BigEndianWorks) {
     EXPECT_EQ(0, 0);
 }
 
-#if 0
-TEST_F(FooTest, TestThatFails) {
-    VectorSaveSerializer vectorWriter;
-    save< big_endian<4> >(vectorWriter, 0x12345678);
-
-    VectorLoadSerializer vectorReader(vectorWriter.getData());
-    load< const_formatter< little_endian<4> > >(vectorReader, 0x12345678);
-}
-#endif
-
 }  // namespace
 
 int main(int argc, char **argv) {
