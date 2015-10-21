@@ -15,13 +15,26 @@
 #ifndef BinaryFormatSerializer_size_prefix_formatter_H
 #define BinaryFormatSerializer_size_prefix_formatter_H
 
-#include "ISeekable.h"
-#include "SizeCountingSerializer.h"
 #include "ScopedSerializer.h"
+
+#include <cstdint>
 
 namespace binary_format
 {
 
+/// @brief sized_formatter function returns formatter that should consume given number of bytes.
+///        It should be defined for all formatters that are intended to be used with size_prefix_formatter.
+///        Overload this function to provide more meaningful semantics.
+///        Overloads of this function will be found using Argument Dependent Lookup.
+template<typename Formatter>
+const Formatter& sized_formatter(const Formatter& formatter, boost::uintmax_t byteCount)
+{
+    return formatter;
+}
+
+/// @brief size_prefix_formatter will prefix the serialized data with field containing size of data.
+///        Serializers used with this formatter must define position() and seek() methods.
+///        ValueFormatters used this formatter must have proper sized_formatter overload provided.
 template<typename SizeFormatter, typename ValueFormatter>
 class size_prefix_formatter
 {
@@ -40,20 +53,25 @@ public:
     template<typename ValueType, typename TSerializer>
     void save(TSerializer& serializer, const ValueType& value)
     {
-        offset_t initialPosition = serializer.position();
+        auto initialPosition = serializer.position();
 
-        offset_t byteCount = 0;
+        uintmax_t byteCount = 0;
         size_formatter.save(serializer, byteCount);  // reserve space for storing byteCount
 
-        offset_t dataPosition = serializer.position();  // position where data starts
+        auto dataPosition = serializer.position();  // position where data starts
         value_formatter.save(serializer, value);
-        offset_t endPosition = serializer.position();  // position where data ends
+        auto endPosition = serializer.position();  // position where data ends
 
-        byteCount = endPosition - dataPosition;
+        byteCount = static_cast<uintmax_t>(endPosition - dataPosition);
+        if (byteCount < 0)
+        {
+            BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("Data size cannot be less than zero."));
+        }
+
         serializer.seek(initialPosition);
         size_formatter.save(serializer, byteCount); // write actual byteCount
 
-        offset_t afterSizePosition = serializer.position();
+        auto afterSizePosition = serializer.position();
 
         if (afterSizePosition != dataPosition)
         {
@@ -66,11 +84,16 @@ public:
     template<typename ValueType, typename TSerializer>
     void load(TSerializer& serializer, ValueType& value)
     {
-        offset_t byteCount;
+        uintmax_t byteCount;
         size_formatter.load(serializer, byteCount);
+        if (byteCount < 0)
+        {
+            BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("Data size cannot be less than zero."));
+        }
 
-        ScopedSerializer scopedSerializer(serializer, byteCount);
-        scopedSerializer.load(value, byteCount, value_formatter);
+        ScopedSerializer<TSerializer> scopedSerializer(serializer, byteCount);
+        decltype(auto) sizedValueFormatter = sized_formatter(value_formatter, byteCount);
+        scopedSerializer.load(value, sizedValueFormatter);
         scopedSerializer.verifyAllBytesProcessed();
     }
 };
