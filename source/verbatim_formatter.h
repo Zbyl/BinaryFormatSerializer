@@ -17,9 +17,6 @@
 
 #include <type_traits>
 
-#include <boost/static_assert.hpp>
-#include <boost/exception/error_info.hpp>
-
 namespace binary_format
 {
 
@@ -31,8 +28,8 @@ public:
     template<typename T, typename TSerializer = ISerializer>
     void save(TSerializer& serializer, const T& pod) const
     {
-        BOOST_STATIC_ASSERT(std::is_pod<T>::value);
-        BOOST_STATIC_ASSERT(sizeof(T) == Size);
+        static_assert(std::is_pod<T>::value, "verbatim_formatter can store only PODs");
+        static_assert(sizeof(T) == Size, "verbatim_formatter<Size> can store only PODs of size == Size");
         serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&pod), Size);
     }
 
@@ -40,15 +37,16 @@ public:
     template<typename T, typename TSerializer = ISerializer>
     void load(TSerializer& serializer, T& pod) const
     {
-        BOOST_STATIC_ASSERT(boost::is_pod<T>::value);
-        BOOST_STATIC_ASSERT(sizeof(T) == Size);
+        static_assert(std::is_pod<T>::value, "verbatim_formatter can store only PODs");
+        static_assert(sizeof(T) == Size, "verbatim_formatter<Size> can store only PODs of size == Size");
         serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&pod), Size);
     }
 };
 
 /// @note is_verbatim_formatter type trait is intended to be specialized for other foratters. little_endian is also a verbatim_formatter.
 /// @brief is_verbatim_formatter is a false_type if formatter will serialize given type differently than verbatim_formatter<sizeof(T)>.
-template<typename Formatter, typename T>
+/// @note Last type parameter is to allow for enable_if usage in specializations. See endian_formatter for an example.
+template<typename Formatter, typename T, typename = void>
 struct is_verbatim_formatter : public std::false_type
 {};
 

@@ -16,18 +16,15 @@
 #define BinaryFormatSerializer_endian_formatter_H
 
 #include "integer_of_size.h"
-#include "endian_shuffle.h"
 #include "serialization_exceptions.h"
 #include "verbatim_formatter.h"
 
 #include <type_traits>
 
 #include <boost/exception/error_info.hpp>
+#include <boost/endian/conversion.hpp>
 
 namespace binary_format
-{
-
-namespace detail
 {
 
 template<int Size, typename T>
@@ -36,11 +33,27 @@ struct cant_store_type_in_this_number_of_bytes
     typedef boost::error_info<struct tag_cant_store_type_in_this_number_of_bytes, T> errinfo;
 };
 
-template<typename endian_tag, int Size>
+template<boost::endian::order TargetOrder, int Size>
 class endian_formatter
 {
 public:
-    /// @brief Stores given pod in endian_tag byte order.
+    /// @brief Stores given bool in TargetOrder byte order.
+    ///        Throws lossy_conversion if Size is not enough to represent actual run-time value of pod.
+    template<typename TSerializer = ISerializer>
+    void save(TSerializer& serializer, bool b) const
+    {
+        save(serializer, static_cast<int>(b));
+    }
+
+    /// @brief Loads given bool from TargetOrder byte order.
+    template<typename TSerializer = ISerializer>
+    void load(TSerializer& serializer, bool& b) const
+    {
+        using SizedInt = typename integer_of_size<false, sizeof(bool)>::type;
+        load(serializer, reinterpret_cast<SizedInt&>(b));   // @todo: violates strict aliasing rules?
+    }
+
+    /// @brief Stores given pod in TargetOrder byte order.
     ///        Throws lossy_conversion if Size is not enough to represent actual run-time value of pod.
     template<typename T, typename TSerializer = ISerializer>
     typename std::enable_if< std::is_integral<T>::value || std::is_enum<T>::value >::type 
@@ -54,14 +67,14 @@ public:
         // throw if conversion to sized_value was lossy
         if (static_cast<T>(resized_value) != pod)
         {
-            BOOST_THROW_EXCEPTION((lossy_conversion() << typename detail::cant_store_type_in_this_number_of_bytes<Size, T>::errinfo(pod)));
+            BOOST_THROW_EXCEPTION((lossy_conversion() << typename cant_store_type_in_this_number_of_bytes<Size, T>::errinfo(pod)));
         }
 
-        SizedInt endian_shuffled_value = native_to<endian_tag>(resized_value);
-        serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&endian_shuffled_value), Size);
+        SizedInt endian_shuffled_value = boost::endian::conditional_reverse<boost::endian::order::native, TargetOrder>(resized_value); 
+        serializer.saveData(reinterpret_cast<boost::uint8_t*>(&endian_shuffled_value), Size);
     }
 
-    /// @brief Loads given pod from endian_tag byte order.
+    /// @brief Loads given pod from TargetOrder byte order.
     template<typename T, typename TSerializer = ISerializer>
     typename std::enable_if< std::is_integral<T>::value || std::is_enum<T>::value >::type 
     load(TSerializer& serializer, T& pod) const
@@ -70,13 +83,13 @@ public:
 
         using SizedInt = typename integer_of_size<std::is_signed<T>::value, Size>::type;
         SizedInt endian_shuffled_value;
-        serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&endian_shuffled_value), Size);
+        serializer.loadData(reinterpret_cast<boost::uint8_t*>(&endian_shuffled_value), Size);
 
-        SizedInt resized_value = native_to<endian_tag>(endian_shuffled_value);
+        SizedInt resized_value = boost::endian::conditional_reverse<TargetOrder, boost::endian::order::native>(endian_shuffled_value); 
         pod = static_cast<T>(resized_value);
     }
 
-    /// @brief Stores given pod in endian_tag byte order.
+    /// @brief Stores given pod in TargetOrder byte order.
     template<typename T, typename TSerializer = ISerializer>
     typename std::enable_if< !(std::is_integral<T>::value || std::is_enum<T>::value) >::type 
     save(TSerializer& serializer, const T& pod) const
@@ -84,11 +97,20 @@ public:
         static_assert(std::is_pod<T>::value, "Type must be a pod.");
         static_assert(sizeof(T) == Size, "Only integral types can be stored on different number of bytes than their size.");
 
-        T shuffled_value = native_to<endian_tag>(pod);
-        serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&shuffled_value), Size);
+        if (TargetOrder == boost::endian::order::native)
+        {
+            serializer.saveData(reinterpret_cast<const boost::uint8_t*>(&pod), Size);
+        }
+        else
+        {
+            uint8_t rawValue[Size];
+            auto begin = reinterpret_cast<const boost::uint8_t*>(&pod);
+            std::reverse_copy(begin, begin + Size, rawValue);
+            serializer.saveData(rawValue, Size);
+        }
     }
 
-    /// @brief Loads given pod from endian_tag byte order.
+    /// @brief Loads given pod from TargetOrder byte order.
     template<typename T, typename TSerializer = ISerializer>
     typename std::enable_if< !(std::is_integral<T>::value || std::is_enum<T>::value) >::type 
     load(TSerializer& serializer, T& pod) const
@@ -96,29 +118,44 @@ public:
         static_assert(std::is_pod<T>::value, "Type must be a pod.");
         static_assert(sizeof(T) == Size, "Only integral types can be loaded from different number of bytes than their size.");
 
-        T shuffled_value;
-        serializer.serializeData(reinterpret_cast<boost::uint8_t*>(&shuffled_value), Size);
-        pod = native_to<endian_tag>(shuffled_value);
+        if (TargetOrder == boost::endian::order::native)
+        {
+            serializer.loadData(reinterpret_cast<boost::uint8_t*>(&pod), Size);
+        }
+        else
+        {
+            uint8_t rawValue[Size];
+            serializer.loadData(rawValue, Size);
+            auto begin = reinterpret_cast<boost::uint8_t*>(&pod);
+            std::reverse_copy(rawValue, rawValue + Size, begin);
+        }
     }
 };
 
-} // namespace detail
-
 template<int Size>
-class little_endian : public detail::endian_formatter<little_endian_tag, Size>
+class little_endian : public endian_formatter<boost::endian::order::little, Size>
 {
 };
 
 template<int Size>
-class big_endian : public detail::endian_formatter<big_endian_tag, Size>
+class big_endian : public endian_formatter<boost::endian::order::big, Size>
 {
 };
 
 /// @brief little_endian<sizeof(T)> will serialize T the same way as verbatim_formatter<sizeof(T)>.
-/// @note We assume a little endian machine here.
-template<typename T>
-struct is_verbatim_formatter< little_endian<sizeof(T)>, T > : public std::true_type
+template<typename Formatter, typename T>
+struct is_verbatim_formatter<Formatter, T,
+    typename std::enable_if<
+        std::is_base_of< endian_formatter<boost::endian::order::native, sizeof(T)>, Formatter >::value
+        >::type
+    > : public std::true_type
 {};
+
+static_assert(is_verbatim_formatter< endian_formatter<boost::endian::order::native, 4>, uint32_t >::value, "Native endian_formatter should be a verbatim formatter.");
+static_assert((boost::endian::order::native != boost::endian::order::little) || is_verbatim_formatter< little_endian<4>, uint32_t >::value, "little_endian should be a verbatim formatter on little endian machines.");
+static_assert((boost::endian::order::native != boost::endian::order::little) || !is_verbatim_formatter< big_endian<4>, uint32_t >::value, "big_endian should not be a verbatim formatter on little endian machines.");
+static_assert((boost::endian::order::native != boost::endian::order::big) || is_verbatim_formatter< big_endian<4>, uint32_t >::value, "big_endian should be a verbatim formatter on big endian machines.");
+static_assert((boost::endian::order::native != boost::endian::order::big) || !is_verbatim_formatter< little_endian<4>, uint32_t >::value, "little_endian should not be a verbatim formatter on big endian machines.");
 
 } // namespace binary_format
 

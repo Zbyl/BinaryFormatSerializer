@@ -98,6 +98,9 @@ template<typename ValueFormatter, typename T>
 struct is_verbatim_formatter< const_formatter<ValueFormatter>, T > : public is_verbatim_formatter<ValueFormatter, T>
 {};
 
+static_assert(is_verbatim_formatter< const_formatter< verbatim_formatter<4> >, uint32_t >::value, "const_formatter<verbatim formatter> should be a verbatim formatter.");
+static_assert(!is_verbatim_formatter< const_formatter< int >, uint32_t >::value, "const_formatter<non-verbatim formatter> should not be a verbatim formatter.");
+
 } // namespace binary_format
 
 #endif // BinaryFormatSerializer_const_formatter_H

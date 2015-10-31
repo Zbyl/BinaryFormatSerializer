@@ -24,10 +24,6 @@
 namespace binary_format
 {
 
-namespace detail
-{
-} // namespace detail
-
 template<typename ValueFormatter, int ArraySize = -1>
 class fixed_size_array_formatter : public unified_formatter_base< fixed_size_array_formatter<ValueFormatter, ArraySize> >
 {
@@ -39,27 +35,42 @@ public:
     {
     }
 
-#if 0
-    template<int Size, typename ValueType>
-    void serialize(ISerializer& serializer, ValueType(&array)[Size]) const
-    {
-        BOOST_STATIC_ASSERT(ArraySize <= Size);
-        const int array_size = (ArraySize == -1) ? Size : ArraySize;
-        for (int i = 0; i < array_size; ++i)
-        {
-            serializer.serialize(array[i], value_formatter);
-        }
-    }
-#endif
-
     template<typename ValueType, typename TSerializer>
-    void serialize(TSerializer& serializer, ValueType* array) const
+    typename std::enable_if< !is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    save(TSerializer& serializer, const ValueType *const array) const
     {
         BOOST_STATIC_ASSERT(ArraySize >= 0);
         for (int i = 0; i < ArraySize; ++i)
         {
-            serializer.serialize(array[i], value_formatter);
+            value_formatter.save(serializer, array[i]);
         }
+    }
+
+    template<typename ValueType, typename TSerializer>
+    typename std::enable_if< is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    save(TSerializer& serializer, const ValueType *const array) const
+    {
+        BOOST_STATIC_ASSERT(ArraySize >= 0);
+        serializer.saveData(reinterpret_cast<const boost::uint8_t*>(array), ArraySize * sizeof(ValueType));
+    }
+
+    template<typename ValueType, typename TSerializer>
+    typename std::enable_if< !is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    load(TSerializer& serializer, ValueType *const array) const
+    {
+        BOOST_STATIC_ASSERT(ArraySize >= 0);
+        for (int i = 0; i < ArraySize; ++i)
+        {
+            value_formatter.load(serializer, array[i]);
+        }
+    }
+
+    template<typename ValueType, typename TSerializer>
+    typename std::enable_if< is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    load(TSerializer& serializer, ValueType *const array) const
+    {
+        BOOST_STATIC_ASSERT(ArraySize >= 0);
+        serializer.loadData(reinterpret_cast<boost::uint8_t*>(array), ArraySize * sizeof(ValueType));
     }
 };
 
@@ -75,12 +86,37 @@ public:
     }
 
     template<int Size, typename ValueType, typename TSerializer>
-    void serialize(TSerializer& serializer, ValueType(&array)[Size]) const
+    typename std::enable_if< !is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    save(TSerializer& serializer, ValueType(&array)[Size]) const
     {
         for (int i = 0; i < Size; ++i)
         {
-            serializer.serialize(array[i], value_formatter);
+            value_formatter.save(serializer, array[i]);
         }
+    }
+
+    template<int Size, typename ValueType, typename TSerializer>
+    typename std::enable_if< is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    save(TSerializer& serializer, ValueType(&array)[Size]) const
+    {
+        serializer.saveData(reinterpret_cast<const boost::uint8_t*>(array), Size * sizeof(ValueType));
+    }
+
+    template<int Size, typename ValueType, typename TSerializer>
+    typename std::enable_if< !is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    load(TSerializer& serializer, ValueType(&array)[Size]) const
+    {
+        for (int i = 0; i < Size; ++i)
+        {
+            value_formatter.load(serializer, array[i]);
+        }
+    }
+
+    template<int Size, typename ValueType, typename TSerializer>
+    typename std::enable_if< is_verbatim_formatter<ValueFormatter, ValueType>::value >::type 
+    load(TSerializer& serializer, ValueType(&array)[Size]) const
+    {
+        serializer.loadData(reinterpret_cast<boost::uint8_t*>(array), Size * sizeof(ValueType));
     }
 };
 
@@ -94,8 +130,11 @@ fixed_size_array_formatter<ValueFormatter, ArraySize> create_fixed_size_array_fo
 
 /// @brief fixed_size_array_formatter<ValueFormatter, ArraySize> is a verbatim formatter if ValueFormatter is.
 template<typename ValueFormatter, int ArraySize, typename T>
-struct is_verbatim_formatter< fixed_size_array_formatter<ValueFormatter, ArraySize>, T > : public is_verbatim_formatter<ValueFormatter, T>
+struct is_verbatim_formatter< fixed_size_array_formatter<ValueFormatter, ArraySize>, T > : public is_verbatim_formatter<ValueFormatter, typename std::decay<T>::type>
 {};
+
+static_assert(is_verbatim_formatter< fixed_size_array_formatter< verbatim_formatter<4>, 10 >, uint32_t[10] >::value, "fixed_size_array_formatter<verbatim formatter> should be a verbatim formatter.");
+static_assert(!is_verbatim_formatter< fixed_size_array_formatter< int, 10 >, uint32_t[10] >::value, "fixed_size_array_formatter<non-verbatim formatter> should not be a verbatim formatter.");
 
 } // namespace binary_format
 

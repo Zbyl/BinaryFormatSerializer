@@ -181,4 +181,31 @@ TEST(FixedSizeArrayFormatterWorks, SavingAndLoading)
     }
 }
 
+TEST(FixedSizeArrayFormatterWorks, Constness)
+{
+    {
+        VectorSaveSerializer vectorWriter;
+        const uint8_t value[4] = { 0x01, 0x02, 0x03, 0x04 };
+        save< fixed_size_array_formatter< little_endian<2>, 4 > >(vectorWriter, value);
+        const auto checkValue = std::vector<uint8_t> { 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00 };
+        EXPECT_EQ(vectorWriter.getData(), checkValue);
+    }
+
+    {
+        VectorSaveSerializer vectorWriter;
+        const uint8_t value[4] = { 0x01, 0x02, 0x03, 0x04 };
+        const uint8_t * const cvalue = value;
+        save< fixed_size_array_formatter< little_endian<2>, 4 > >(vectorWriter, cvalue);
+        const auto checkValue = std::vector<uint8_t> { 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00 };
+        EXPECT_EQ(vectorWriter.getData(), checkValue);
+    }
+
+    {
+        std::vector<uint8_t> data { 0x01, 0x02, 0x03, 0x04 };
+        VectorLoadSerializer vectorReader(data);
+        uint8_t checkValue[4] = { 0x01, 0x02, 0x03, 0x04 };
+        load< fixed_size_array_formatter< little_endian<1> > >(vectorReader, checkValue);
+    }
+}
+
 }  // namespace

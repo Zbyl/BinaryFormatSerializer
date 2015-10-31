@@ -17,6 +17,20 @@ namespace {
 
 using namespace binary_format;
 
+TEST(EndianFormattersWork, AreVerbatim)
+{
+    if (boost::endian::order::native == boost::endian::order::little)
+    {
+        ASSERT_TRUE((is_verbatim_formatter< little_endian<4>, uint32_t >::value));
+        ASSERT_FALSE((is_verbatim_formatter< big_endian<4>, uint32_t >::value));
+    }
+    else
+    {
+        ASSERT_FALSE((is_verbatim_formatter< little_endian<4>, uint32_t >::value));
+        ASSERT_TRUE((is_verbatim_formatter< big_endian<4>, uint32_t >::value));
+    }
+}
+
 TEST(EndianFormattersWork, Loading)
 {
     std::vector<uint8_t> data { 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0 };
@@ -269,5 +283,25 @@ TEST(EndianFormattersWork, Floats)
     load< const_formatter< big_endian<8> > >(vectorReader, d);
     load< const_formatter< big_endian<8> > >(vectorReader, dt);
 }
-    
+
+TEST(EndianFormattersWork, Bool)
+{
+    VectorSaveSerializer vectorWriter;
+    bool bt = true;
+    bool bf = false;
+    save< little_endian<1> >(vectorWriter, bf);
+    save< little_endian<1> >(vectorWriter, bt);
+    save< little_endian<2> >(vectorWriter, bt);
+    save< big_endian<2> >(vectorWriter, bt);
+    save< big_endian<2> >(vectorWriter, bf);
+
+    const auto value = std::vector<uint8_t> { 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00 };
+    VectorLoadSerializer vectorReader(value);
+    load< const_formatter< little_endian<1> > >(vectorReader, bf);
+    load< const_formatter< little_endian<1> > >(vectorReader, bt);
+    load< const_formatter< little_endian<2> > >(vectorReader, bt);
+    load< const_formatter< big_endian<2> > >(vectorReader, bt);
+    load< const_formatter< big_endian<2> > >(vectorReader, bf);
+}
+
 }  // namespace
