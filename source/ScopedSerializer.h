@@ -48,6 +48,12 @@ public:
         return bytesProcessed;
     }
 
+    /// @brief Returns number of bytes that are still left to be processed.
+    boost::uintmax_t getBytesLeft()
+    {
+        return byteLimit - bytesProcessed;
+    }
+
     /// @brief This method will verify that serialization processed exactly the number of bytes specified as the byte limit.
     ///        It will throw invalid_data exception if not all data was processed.
     void verifyAllBytesProcessed()
