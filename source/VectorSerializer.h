@@ -26,7 +26,13 @@ namespace binary_format
 class VectorSaveSerializer : public SerializerMixin<VectorSaveSerializer>
 {
     std::vector<boost::uint8_t> buffer;
+    size_t pos;
 public:
+    VectorSaveSerializer()
+        : pos(0)
+    {
+    }
+
     const std::vector<boost::uint8_t>& getData()
     {
         return buffer;
@@ -37,21 +43,47 @@ public:
         return true;
     }
 
+    size_t position()
+    {
+        return pos;
+    }
+
+    void seek(size_t position)
+    {
+        if (position > buffer.size())
+        {
+            buffer.resize(position);
+        }
+
+        pos = position;
+    }
+
 public:
     void serializeData(boost::uint8_t* data, size_t size)
     {
-        buffer.insert(buffer.end(), data, data + size);
+        if (pos == buffer.size())
+        {
+            buffer.insert(buffer.end(), data, data + size);
+            return;
+        }
+
+        if (pos + size > buffer.size())
+        {
+            buffer.resize(pos + size);
+        }
+
+        std::copy(data, data + size, buffer.begin() + pos);
     }
 };
 
 class VectorLoadSerializer : public SerializerMixin<VectorLoadSerializer>
 {
     const std::vector<boost::uint8_t>& buffer;
-    size_t position;
+    size_t pos;
 public:
     explicit VectorLoadSerializer(const std::vector<boost::uint8_t>& buffer)
         : buffer(buffer)
-        , position(0)
+        , pos(0)
     {
     }
 
@@ -60,16 +92,31 @@ public:
         return false;
     }
 
+    size_t position()
+    {
+        return pos;
+    }
+
+    void seek(size_t position)
+    {
+        if (position > buffer.size())
+        {
+            BOOST_THROW_EXCEPTION(end_of_input() << detail::errinfo_requested_this_many_bytes_more(pos - buffer.size()));
+        }
+
+        pos = position;
+    }
+
 public:
     void serializeData(boost::uint8_t* data, size_t size)
     {
-        if (position + size > buffer.size())
+        if (pos + size > buffer.size())
         {
-            BOOST_THROW_EXCEPTION(end_of_input() << detail::errinfo_requested_this_many_bytes_more(position + size - buffer.size()));
+            BOOST_THROW_EXCEPTION(end_of_input() << detail::errinfo_requested_this_many_bytes_more(pos + size - buffer.size()));
         }
 
-        std::copy_n(buffer.begin() + position, size, data);
-        position += size;
+        std::copy_n(buffer.begin() + pos, size, data);
+        pos += size;
     }
 };
 
