@@ -12,6 +12,7 @@
 #include "any_formatter.h"
 #include "vector_formatter.h"
 #include "const_formatter.h"
+#include "bit_formatter.h"
 
 #include "VectorSerializer.h"
 
@@ -20,15 +21,34 @@
 #include <map>
 #include <vector>
 
-#include "has_field.h"
+void ela()
+{
+    using namespace binary_format;
+
+    VectorSaveSerializer vectorWriter;
+    bit_formatter<boost::endian::order::little, 1, 7>().save(vectorWriter, 1, 0xFF);
+}
+
+#include "has_member.h"
 
 struct WithX { int X; };
 struct WithoutX { int Y; };
-GENERATE_HAS_FIELD(X);
+GENERATE_HAS_MEMBER(X);
+
+struct Pos1 { int position; };
+struct Pos2 { int position(int); };
+GENERATE_HAS_MEMBER(position);
+
 void ala()
 {
-    static_assert(has_field_X<WithX>::value == 1, "WithX should have X!");
-    static_assert(has_field_X<WithoutX>::value == 0, "WithoutX should not have X!");
+    static_assert(has_member_X<WithX>::value == 1, "WithX should have X!");
+    static_assert(has_member_X<WithoutX>::value == 0, "WithoutX should not have X!");
+
+    static_assert(has_member_position<Pos1>::value == 1, "Pos1 should have position!");
+    static_assert(has_member_position<Pos2>::value == 1, "Pos2 should have position!");
+    static_assert(has_member_position<WithX>::value == 0, "WithX should not have position!");
+
+    //static_assert(binary_format::has_data_position<WithoutX>::value == 0, "WithoutX should not have X!");
 }
 
 using namespace binary_format;
@@ -126,13 +146,17 @@ int main(int argc, char* argv[])
 
     any_formatter<VectorLoadSerializer> mapFormat3(make_any_formatter<VectorLoadSerializer, std::map<int, std::string> >(mapFormat));
 
+    type_formatter<ISeekableSerializer, std::map<int, std::string> > mapFormat4(mapFormat);
+
     TempVectorSaveSerializer vectorWriter;
     vectorWriter.serialize(map, mapFormat);
     vectorWriter.serialize(map, mapFormat2);
+    make_seekable_serializer_force(vectorWriter).serialize(map, mapFormat4);
 
     VectorLoadSerializer vectorReader(vectorWriter.getData());
-    vectorReader.serialize(map2, mapFormat3);
-    vectorReader.serialize(map3, mapFormat);
+    make_seekable_serializer_force(vectorReader).serialize(map2, mapFormat4);
+    vectorReader.serialize(map3, mapFormat3);
+    vectorReader.serialize(map4, mapFormat);
 
     std::vector<int> vector {1, 2, 3, 4, 5};
 
