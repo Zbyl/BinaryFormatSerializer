@@ -2,10 +2,10 @@ BinaryFormatSerializer
 ======================
 
 BinaryFormatSerializer is a library for serializing data in arbitrary binary format.  
-This is currently a prototype under development.
+This library is proven in production code.
 
 Distributed under Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)  
-(c) 2014 Zbigniew Skowron, zbychs@gmail.com
+(c) 2014-2016 Zbigniew Skowron, zbychs@gmail.com
 
 Rationale
 =========
@@ -88,5 +88,4 @@ Notes
 2. Google Protocol Buffers formatters would be a nice addition to this library.
 3. Helper classes implementing versioning would be a nice addition too.
 4. This library does not use asserts, even where they would make sense. Exceptions are thrown instead. This is because asserts are not overridable, and BOOST_ASSERT() has inconsistent behaviour in debug and release mode, depending on whether it was overriden by the user, or not. Once BOOST_ASSERT() is fixed I will probably use that.
-5. This library currently assumes a little endian machine. Once boost::endian library is available the code will be updated to use it.
-6. It would be a nice exercise to try to make ISerializer a concept for boost::poly or adobe::poly, instead of a polymorphic type. This is partially done now, by making serializers non-polymorphic, and providing a polymorphic AnySerializer<>.
+5. It would be a nice exercise to try to make ISerializer a concept for boost::poly or adobe::poly, instead of a polymorphic type. This is partially done now, by making serializers non-polymorphic, and providing a polymorphic AnySerializer<>.
