@@ -18,6 +18,7 @@
 #include "serialization_exceptions.h"
 
 #include <algorithm>
+#include <cstdint>
 
 namespace binary_format
 {
@@ -25,11 +26,11 @@ namespace binary_format
 class IZeroCopySerializer : public ISerializer
 {
 public:
-    virtual void serializeData(boost::uint8_t* data, size_t size)
+    virtual void serializeData(uint8_t* data, size_t size)
     {
         while (size > 0)
         {
-            boost::uint8_t* chunk;
+            uint8_t* chunk;
             size_t chunkSize;
             if (!nextChunk(chunk, chunkSize))
             {
@@ -55,6 +56,8 @@ public:
 
             data += toCopy;
             size -= toCopy;
+
+            giveBack(0);
         }
     }
 
@@ -63,7 +66,7 @@ public:
     ///        when nextChunk() is called again, or some bytes are returned by calling giveBack().
     ///        If value returned from this function is false, then it means that no more data can be
     ///        read or written (the input/output reached it's end). size will then be set to zero.
-    virtual bool nextChunk(boost::uint8_t*& data, size_t& size) = 0;
+    virtual bool nextChunk(uint8_t*& data, size_t& size) = 0;
 
     /// @brief Informs that buffer returned by nextChunk() has been processed by the client,
     ///        except for the last 'unprocessed' number bytes.
