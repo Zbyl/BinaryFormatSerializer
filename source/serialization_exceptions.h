@@ -49,6 +49,11 @@ class invalid_data : public virtual serialization_exception
 {
 };
 
+/// @brief not_implemented exception is thrown when some method is not implemented.
+class not_implemented : public virtual serialization_exception
+{
+};
+
 namespace detail
 {
     typedef boost::error_info<struct tag_description, const char*> errinfo_description;
