@@ -1,7 +1,8 @@
 // BitFormatterTests.cpp - tests for bit_formatter
 //
 
-#include "serializers/VectorSerializer.h"
+#include "serializers/VectorSaveSerializer.h"
+#include "serializers/MemorySerializer.h"
 
 #include "formatters/bit_formatter.h"
 #include "formatters/const_formatter.h"
@@ -73,7 +74,7 @@ TEST(BitFormatterWorks, Saving)
 TEST(BitFormatterWorks, Loading)
 {
     std::vector<uint8_t> data { 0x00, 0x01, 0x7e, 0x80, 0xfe, 0xff };
-    VectorLoadSerializer vectorReader(data);
+    MemoryLoadSerializer vectorReader(data);
 
     {
         int v0, v1;
@@ -121,7 +122,7 @@ TEST(BitFormatterWorks, Loading)
 TEST(BitFormatterWorks, LoadingThree)
 {
     std::vector<uint8_t> data { 0x00, 0x13, 0xff, 0x01, 0x0e, 0xf0 };
-    VectorLoadSerializer vectorReader(data);
+    MemoryLoadSerializer vectorReader(data);
 
     {
         int v0, v1, v2;
@@ -175,7 +176,7 @@ TEST(BitFormatterWorks, LoadingThree)
 TEST(BitFormatterWorks, LoadingThreeUnsigned)
 {
     std::vector<uint8_t> data { 0x00, 0x13, 0xff, 0x01, 0x0e, 0xf0 };
-    VectorLoadSerializer vectorReader(data);
+    MemoryLoadSerializer vectorReader(data);
 
     {
         unsigned v0, v1, v2;
@@ -244,7 +245,7 @@ TEST(BitFormatterWorks, Packer)
 
     {
         std::vector<uint8_t> data { 0x00, 0x13, 0xff, 0x01, 0x0e, 0xf0 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
 
         load< const_formatter< little_endian<1> > >(vectorReader, bit_packer<1, 3, 4>::pack(0, 0, 0));
         load< const_formatter< little_endian<1> > >(vectorReader, bit_packer<1, 3, 4>::pack(-1, 1, 1));
@@ -273,7 +274,7 @@ TEST(BitFormatterWorks, Tuples)
 
     {
         std::vector<uint8_t> data { 0x00, 0x13, 0xff, 0x01, 0x0e, 0xf0 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
 
         // test for loading into a reference to a tuple
         {
@@ -310,7 +311,7 @@ TEST(BitFormatterWorks, Tuples)
 
     {
         std::vector<uint8_t> data { 0x00, 0x13, 0xff, 0x01, 0x0e, 0xf0 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
 
         // test for loading into a tuple of references
         {
@@ -347,7 +348,7 @@ TEST(BitFormatterWorks, Tuples)
 
     {
         std::vector<uint8_t> data { 0x00, 0x13, 0xff, 0x01, 0x0e, 0xf0 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
 
         // test for loading into a reference to a tuple
         load< const_formatter< bit_formatter<boost::endian::order::little, 1, 3, 4> > >(vectorReader, std::make_tuple(0, 0, 0));
@@ -373,7 +374,7 @@ TEST(BitFormatterWorks, Bools)
 
     {
         std::vector<uint8_t> data { 0x00, 0x13 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
 
         // test for loading into a reference to a tuple
         {

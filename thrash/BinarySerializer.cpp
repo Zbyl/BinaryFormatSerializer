@@ -14,9 +14,10 @@
 #include "formatters/type_formatter.h"
 #include "formatters/any_formatter.h"
 
-#include "serializers/VectorSerializer.h"
+#include "serializers/VectorSaveSerializer.h"
 #include "serializers/CoutSerializer.h"
 #include "serializers/SizeCountingSerializer.h"
+#include "serializers/MemorySerializer.h"
 
 #include <cstdint>
 #include <string>
@@ -63,7 +64,7 @@ void example()
     vectorWriter.serialize<simple_struct_formatter>(simple);
 
     // deserialization
-    VectorLoadSerializer vectorReader(vectorWriter.getData());
+    MemoryLoadSerializer vectorReader(vectorWriter.getData());
     SimpleStruct simple2;
     vectorReader.serialize<simple_struct_formatter>(simple2);
 
@@ -108,10 +109,10 @@ int mainE(int argc, char* argv[])
     vectorWriter.serialize< const_formatter< fixed_size_array_formatter< little_endian<4> > > >("MAGIC_STRING");
     vectorWriter.serialize< inefficient_size_prefix_formatter< little_endian<1>, little_endian<4> > >(lola);
 
-    VectorLoadSerializer vectorReader(vectorWriter.getData());
-    AnySerializer<VectorLoadSerializer>(vectorReader).serialize(map2, mapFormat3);
+    MemoryLoadSerializer vectorReader(vectorWriter.getData());
+    AnySerializer<MemoryLoadSerializer>(vectorReader).serialize(map2, mapFormat3);
     vectorReader.serialize(map3, mapFormat);
-    AnySerializer<VectorLoadSerializer>(vectorReader).serialize(map4, mapFormat2);
+    AnySerializer<MemoryLoadSerializer>(vectorReader).serialize(map4, mapFormat2);
     vectorReader.serialize< const_formatter< fixed_size_array_formatter< little_endian<4> > > >("MAGIC_STRING");
     vectorReader.serialize< inefficient_size_prefix_formatter< little_endian<1>, little_endian<4> > >(lola2);
 

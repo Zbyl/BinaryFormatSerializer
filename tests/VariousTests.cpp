@@ -1,7 +1,7 @@
 // VariousTests.cpp - tests for BinaryFormatSerializer
 //
 
-#include "serializers/VectorSerializer.h"
+#include "serializers/VectorSaveSerializer.h"
 #include "serializers/MemorySerializer.h"
 
 #include "formatters/endian_formatter.h"
@@ -27,13 +27,13 @@ TEST(ConstFormatterWorks, SavingAndLoading)
 
     {
         std::vector<uint8_t> data { 0x12, 0x34, 0x56, 0x78 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         EXPECT_NO_THROW( load< const_formatter< little_endian<4> > >(vectorReader, 0x78563412) );
     }
 
     {
         std::vector<uint8_t> data { 0x12, 0x34, 0x56, 0x78 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         ASSERT_THROW(load< const_formatter< little_endian<4> > >(vectorReader, 0), invalid_data);
     }
 }
@@ -77,7 +77,7 @@ TEST(ExternalValueWorks, SavingAndLoading)
 
     {
         std::vector<uint8_t> data { 0x00, 0x01, 0x02, 0x03, 0x04 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         int size = 5;
         std::vector<uint8_t> vec;
         load(vectorReader, vec, create_vector_formatter(create_external_value(size), little_endian<1>()));

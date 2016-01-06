@@ -4,7 +4,7 @@
 ///
 /// ZeroCopyVectorSerializer.h
 ///
-/// This file contains VectorSaveSerializer and VectorLoadSerializer that write to / read from a vector.
+/// This file contains ZeroCopyVectorSaveSerializer and ZeroCopyVectorLoadSerializer that write to / read from a vector.
 ///
 /// Distributed under Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 /// (c) 2014 Zbigniew Skowron, zbychs@gmail.com
@@ -70,7 +70,7 @@ public:
     }
 };
 
-class ZeroCopyVectorLoadSerializer // : public SerializerMixin<VectorLoadSerializer>, public IZeroCopySerializer
+class ZeroCopyVectorLoadSerializer // : public SerializerMixin<ZeroCopyVectorLoadSerializer>, public IZeroCopySerializer
 {
     const std::vector<uint8_t>& buffer;
     size_t position;

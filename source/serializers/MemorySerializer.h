@@ -106,9 +106,15 @@ public:
         static_assert(sizeof(T) == 1, "Size of data in memory buffer must be 1 to avoid element cout / byte count mismatch errors.");
     }
 
-    template<int Size>
-    explicit MemoryLoadSerializer(const std::array<uint8_t, Size>& buffer)
+    template<typename T, int Size>
+    explicit MemoryLoadSerializer(const std::array<T, Size>& buffer)
         : MemoryLoadSerializer(buffer.data(), Size)
+    {
+    }
+
+    template<typename T>
+    explicit MemoryLoadSerializer(const std::vector<T>& buffer)
+        : MemoryLoadSerializer(buffer.data(), buffer.size())
     {
     }
 
@@ -126,7 +132,7 @@ public:
     {
         if (pos > bufferSize)
         {
-            BOOST_THROW_EXCEPTION(serialization_exception() << detail::errinfo_description("Requested position is greater than size."));
+            BOOST_THROW_EXCEPTION(end_of_input() << detail::errinfo_requested_this_many_bytes_more(pos - bufferSize));
         }
         bufferPosition = pos;
     }

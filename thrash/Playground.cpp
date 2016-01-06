@@ -14,7 +14,8 @@
 #include "formatters/const_formatter.h"
 #include "formatters/bit_formatter.h"
 
-#include "serializers/VectorSerializer.h"
+#include "serializers/VectorSaveSerializer.h"
+#include "serializers/MemorySerializer.h"
 
 #include <cstdint>
 #include <string>
@@ -144,7 +145,7 @@ int main(int argc, char* argv[])
 
     type_formatter< TempVectorSaveSerializer, std::map<int, std::string> > mapFormat2(mapFormat);
 
-    any_formatter<VectorLoadSerializer> mapFormat3(make_any_formatter<VectorLoadSerializer, std::map<int, std::string> >(mapFormat));
+    any_formatter<MemoryLoadSerializer> mapFormat3(make_any_formatter<MemoryLoadSerializer, std::map<int, std::string> >(mapFormat));
 
     type_formatter<ISeekableSerializer, std::map<int, std::string> > mapFormat4(mapFormat);
 
@@ -153,7 +154,7 @@ int main(int argc, char* argv[])
     vectorWriter.serialize(map, mapFormat2);
     make_seekable_serializer_force(vectorWriter).serialize(map, mapFormat4);
 
-    VectorLoadSerializer vectorReader(vectorWriter.getData());
+    MemoryLoadSerializer vectorReader(vectorWriter.getData());
     make_seekable_serializer_force(vectorReader).serialize(map2, mapFormat4);
     vectorReader.serialize(map3, mapFormat3);
     vectorReader.serialize(map4, mapFormat);
@@ -170,7 +171,7 @@ int main(int argc, char* argv[])
     std::vector<int> vector2;
     std::vector<int> vector3;
     std::vector<char> vector4 {1, 2, 3, 4, 5};
-    VectorLoadSerializer vectorReader2(vectorWriter2.getData());
+    MemoryLoadSerializer vectorReader2(vectorWriter2.getData());
     serialize< vector_formatter< little_endian<1>, little_endian<4> > >(vectorReader2, vector2);
     serialize< vector_formatter< little_endian<1>, little_endian<1> > >(vectorReader2, vector3);
     serialize< const_formatter< vector_formatter< little_endian<1>, little_endian<1> > > >(vectorReader2, vector4);

@@ -1,7 +1,8 @@
 // EndianFormatterTests.cpp - tests for BinaryFormatSerializer
 //
 
-#include "serializers/VectorSerializer.h"
+#include "serializers/VectorSaveSerializer.h"
+#include "serializers/MemorySerializer.h"
 
 #include "formatters/endian_formatter.h"
 #include "formatters/const_formatter.h"
@@ -36,7 +37,7 @@ TEST(EndianFormattersWork, Loading)
     std::vector<uint8_t> data { 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE, 0xF0 };
 
     {
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         uint32_t value;
         load< little_endian<1> >(vectorReader, value);
         EXPECT_EQ(value, 0x12);
@@ -46,14 +47,14 @@ TEST(EndianFormattersWork, Loading)
         EXPECT_EQ(value, 0xDEBC9A78);
     }
     {
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         uint64_t value;
         load< little_endian<8> >(vectorReader, value);
         EXPECT_EQ(value, 0xF0DEBC9A78563412);
     }
 
     {
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         uint32_t value;
         load< big_endian<1> >(vectorReader, value);
         EXPECT_EQ(value, 0x12);
@@ -63,7 +64,7 @@ TEST(EndianFormattersWork, Loading)
         EXPECT_EQ(value, 0x789ABCDE);
     }
     {
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         uint64_t value;
         load< big_endian<8> >(vectorReader, value);
         EXPECT_EQ(value, 0x123456789ABCDEF0);
@@ -141,7 +142,7 @@ template<typename T, int Size>
 void loadMinusOne()
 {
     std::vector<uint8_t> data(Size, 0xFF);
-    VectorLoadSerializer vectorReader(data);
+    MemoryLoadSerializer vectorReader(data);
     T value;
     load< little_endian<Size> >(vectorReader, value);
     EXPECT_EQ(value, -1);
@@ -224,7 +225,7 @@ TEST(EndianFormattersWork, SizeWithEnums)
                                               0x01, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
     EXPECT_EQ(vectorWriter.getData(), value);
 
-    VectorLoadSerializer vectorReader(value);
+    MemoryLoadSerializer vectorReader(value);
 
     load< const_formatter< little_endian<1> > >(vectorReader, OVAL1);
     load< const_formatter< little_endian<2> > >(vectorReader, OVAL1);
@@ -272,7 +273,7 @@ TEST(EndianFormattersWork, Floats)
                                               };
     EXPECT_EQ(vectorWriter.getData(), value);
 
-    VectorLoadSerializer vectorReader(value);
+    MemoryLoadSerializer vectorReader(value);
 
     load< const_formatter< little_endian<4> > >(vectorReader, f);
     load< const_formatter< little_endian<4> > >(vectorReader, ft);
@@ -296,7 +297,7 @@ TEST(EndianFormattersWork, Bool)
     save< big_endian<2> >(vectorWriter, bf);
 
     const auto value = std::vector<uint8_t> { 0x00, 0x01, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00 };
-    VectorLoadSerializer vectorReader(value);
+    MemoryLoadSerializer vectorReader(value);
     load< const_formatter< little_endian<1> > >(vectorReader, bf);
     load< const_formatter< little_endian<1> > >(vectorReader, bt);
     load< const_formatter< little_endian<2> > >(vectorReader, bt);

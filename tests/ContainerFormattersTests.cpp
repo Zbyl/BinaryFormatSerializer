@@ -1,7 +1,8 @@
 // VariousTests.cpp - tests for BinaryFormatSerializer
 //
 
-#include "serializers/VectorSerializer.h"
+#include "serializers/VectorSaveSerializer.h"
+#include "serializers/MemorySerializer.h"
 
 #include "formatters/endian_formatter.h"
 #include "formatters/const_formatter.h"
@@ -43,13 +44,13 @@ TEST(StringFormatterWorks, SavingAndLoading)
 
     {
         std::vector<uint8_t> data { 0x0A, 0x00, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         load< const_formatter< string_formatter< little_endian<2> > > >(vectorReader, std::string("0123456789"));
     }
 
     {
         std::vector<uint8_t> data { 0x00 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         load< const_formatter< string_formatter< little_endian<1> > > >(vectorReader, std::string(""));
     }
 }
@@ -87,14 +88,14 @@ TEST(VectorFormatterWorks, SavingAndLoading)
 
     {
         std::vector<uint8_t> data { 0x0A, 0x00, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         const auto checkValue = std::vector<uint8_t> { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 };
         load< const_formatter< vector_formatter< little_endian<2>, little_endian<1> > > >(vectorReader, checkValue);
     }
 
     {
         std::vector<uint8_t> data { 0x00 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         const auto checkValue = std::vector<uint8_t> {};
         load< const_formatter< vector_formatter< little_endian<1>, big_endian<8> > > >(vectorReader, checkValue);
     }
@@ -119,14 +120,14 @@ TEST(MapFormatterWorks, SavingAndLoading)
 
     {
         std::vector<uint8_t> data { 0x0A, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8, 9, 9, 0 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         const auto checkValue = std::map<int, int> { {0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6}, {6, 7}, {7, 8}, {8, 9}, {9, 0} };
         load< const_formatter< map_formatter< big_endian<1>, little_endian<1>, big_endian<1> > > >(vectorReader, checkValue);
     }
 
     {
         std::vector<uint8_t> data { 0x00, 0x00, 0x00, 0x00 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         const auto checkValue = std::map<int, std::string> {};
         load< const_formatter< map_formatter< big_endian<4>, big_endian<2>, string_formatter< little_endian<1> > > > >(vectorReader, checkValue);
     }
@@ -160,21 +161,21 @@ TEST(FixedSizeArrayFormatterWorks, SavingAndLoading)
 
     {
         std::vector<uint8_t> data { 0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         uint8_t checkValue[4] = { 0x01, 0x02, 0x03, 0x04 };
         load< const_formatter< fixed_size_array_formatter< little_endian<2>, 4 > > >(vectorReader, checkValue);
     }
 
     {
         std::vector<uint8_t> data { 0x01, 0x02, 0x03, 0x04 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         uint8_t checkValue[4] = { 0x01, 0x02, 0x03, 0x04 };
         load< const_formatter< fixed_size_array_formatter< little_endian<1> > > >(vectorReader, checkValue);
     }
 
     {
         std::vector<uint8_t> data {};
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         uint8_t checkValue[4] = {1, 2, 3, 4};
         using arrayFormat = const_formatter< fixed_size_array_formatter< little_endian<2>, 0 > >;
         ASSERT_THROW(load<arrayFormat>(vectorReader, checkValue), invalid_data);
@@ -202,7 +203,7 @@ TEST(FixedSizeArrayFormatterWorks, Constness)
 
     {
         std::vector<uint8_t> data { 0x01, 0x02, 0x03, 0x04 };
-        VectorLoadSerializer vectorReader(data);
+        MemoryLoadSerializer vectorReader(data);
         uint8_t checkValue[4] = { 0x01, 0x02, 0x03, 0x04 };
         load< fixed_size_array_formatter< little_endian<1> > >(vectorReader, checkValue);
     }
