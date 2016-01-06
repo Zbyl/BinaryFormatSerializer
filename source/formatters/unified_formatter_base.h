@@ -14,8 +14,6 @@
 #ifndef BinaryFormatSerializer_unified_formatter_base_H
 #define BinaryFormatSerializer_unified_formatter_base_H
 
-#include "ISerializer.h"
-
 #include <boost/type_traits/remove_const.hpp>
 
 namespace binary_format

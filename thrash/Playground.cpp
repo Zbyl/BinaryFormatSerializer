@@ -3,18 +3,18 @@
 
 // TODO: Base 128 Varint formatter and all of Google protocol buffers
 
-#include "ISerializer.h"
+#include "serializers/ISerializer.h"
 
-#include "string_formatter.h"
-#include "map_formatter.h"
-#include "endian_formatter.h"
-#include "type_formatter.h"
-#include "any_formatter.h"
-#include "vector_formatter.h"
-#include "const_formatter.h"
-#include "bit_formatter.h"
+#include "formatters/string_formatter.h"
+#include "formatters/map_formatter.h"
+#include "formatters/endian_formatter.h"
+#include "formatters/type_formatter.h"
+#include "formatters/any_formatter.h"
+#include "formatters/vector_formatter.h"
+#include "formatters/const_formatter.h"
+#include "formatters/bit_formatter.h"
 
-#include "VectorSerializer.h"
+#include "serializers/VectorSerializer.h"
 
 #include <cstdint>
 #include <string>
@@ -29,7 +29,7 @@ void ela()
     bit_formatter<boost::endian::order::little, 1, 7>().save(vectorWriter, 1, 0xFF);
 }
 
-#include "has_member.h"
+#include "utility/has_member.h"
 
 struct WithX { int X; };
 struct WithoutX { int Y; };

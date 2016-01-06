@@ -15,7 +15,7 @@
 #ifndef BinaryFormatSerializer_size_prefix_formatter_H
 #define BinaryFormatSerializer_size_prefix_formatter_H
 
-#include "ScopedSerializer.h"
+#include "serializers/ScopedSerializer.h"
 
 #include <cstdint>
 

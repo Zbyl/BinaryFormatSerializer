@@ -1,10 +1,10 @@
 // EndianFormatterTests.cpp - tests for BinaryFormatSerializer
 //
 
-#include "VectorSerializer.h"
+#include "serializers/VectorSerializer.h"
 
-#include "endian_formatter.h"
-#include "const_formatter.h"
+#include "formatters/endian_formatter.h"
+#include "formatters/const_formatter.h"
 
 #include "gtest/gtest.h"
 

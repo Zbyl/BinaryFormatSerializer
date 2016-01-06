@@ -17,8 +17,8 @@
 #ifndef BinaryFormatSerializer_inefficient_size_prefix_formatter_H
 #define BinaryFormatSerializer_inefficient_size_prefix_formatter_H
 
-#include "SizeCountingSerializer.h"
-#include "ScopedSerializer.h"
+#include "serializers/SizeCountingSerializer.h"
+#include "serializers/ScopedSerializer.h"
 
 namespace binary_format
 {

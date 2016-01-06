@@ -15,7 +15,7 @@
 #define BinaryFormatSerializer_ISerializer_H
 
 #include "serialization_exceptions.h"
-#include "has_member.h"
+#include "utility/has_member.h"
 
 #include <utility>
 

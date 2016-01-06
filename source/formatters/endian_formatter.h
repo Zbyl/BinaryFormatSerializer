@@ -15,7 +15,7 @@
 #ifndef BinaryFormatSerializer_endian_formatter_H
 #define BinaryFormatSerializer_endian_formatter_H
 
-#include "integer_of_size.h"
+#include "utility/integer_of_size.h"
 #include "serialization_exceptions.h"
 #include "verbatim_formatter.h"
 

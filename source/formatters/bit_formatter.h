@@ -15,7 +15,7 @@
 #define BinaryFormatSerializer_bit_formatter_H
 
 #include "endian_formatter.h"
-#include "bit_packer.h"
+#include "utility/bit_packer.h"
 
 namespace binary_format
 {

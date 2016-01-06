@@ -14,9 +14,7 @@
 #ifndef BinaryFormatSerializer_external_value_H
 #define BinaryFormatSerializer_external_value_H
 
-#include "ISerializer.h"
-
-#include <string>
+#include "serialization_exceptions.h"
 
 namespace binary_format
 {

@@ -14,8 +14,6 @@
 #ifndef BinaryFormatSerializer_string_formatter_H
 #define BinaryFormatSerializer_string_formatter_H
 
-#include "ISerializer.h"
-
 #include <string>
 
 namespace binary_format

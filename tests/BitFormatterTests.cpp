@@ -1,10 +1,10 @@
 // BitFormatterTests.cpp - tests for bit_formatter
 //
 
-#include "VectorSerializer.h"
+#include "serializers/VectorSerializer.h"
 
-#include "bit_formatter.h"
-#include "const_formatter.h"
+#include "formatters/bit_formatter.h"
+#include "formatters/const_formatter.h"
 
 #include "gtest/gtest.h"
 

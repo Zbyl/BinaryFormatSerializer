@@ -15,8 +15,6 @@
 #ifndef BinaryFormatSerializer_any_formatter_H
 #define BinaryFormatSerializer_any_formatter_H
 
-#include "ISerializer.h"
-
 #include <memory>
 
 #include <boost/any.hpp>

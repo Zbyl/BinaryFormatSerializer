@@ -1,7 +1,7 @@
 // MetaProgrammingTests.cpp - tests for meta programming helpers
 //
 
-#include "metaprogramming.h"
+#include "utility/metaprogramming.h"
 
 #include <utility>
 #include <type_traits>

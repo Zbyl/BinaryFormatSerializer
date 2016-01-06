@@ -1,14 +1,14 @@
 // VariousTests.cpp - tests for BinaryFormatSerializer
 //
 
-#include "VectorSerializer.h"
-#include "MemorySerializer.h"
+#include "serializers/VectorSerializer.h"
+#include "serializers/MemorySerializer.h"
 
-#include "endian_formatter.h"
-#include "const_formatter.h"
-#include "size_prefix_formatter.h"
-#include "vector_formatter.h"
-#include "external_value.h"
+#include "formatters/endian_formatter.h"
+#include "formatters/const_formatter.h"
+#include "formatters/size_prefix_formatter.h"
+#include "formatters/vector_formatter.h"
+#include "formatters/external_value.h"
 
 #include "gtest/gtest.h"
 

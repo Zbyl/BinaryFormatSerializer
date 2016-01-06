@@ -1,22 +1,22 @@
 // BinarySerializer.cpp : Defines the entry point for the console application.
 //
 
-#include "ISerializer.h"
+#include "serializers/ISerializer.h"
 
-#include "unified_formatter_base.h"
-#include "string_formatter.h"
-#include "map_formatter.h"
-#include "vector_formatter.h"
-#include "endian_formatter.h"
-#include "const_formatter.h"
-#include "fixed_size_array_formatter.h"
-#include "inefficient_size_prefix_formatter.h"
-#include "type_formatter.h"
-#include "any_formatter.h"
+#include "formatters/unified_formatter_base.h"
+#include "formatters/string_formatter.h"
+#include "formatters/map_formatter.h"
+#include "formatters/vector_formatter.h"
+#include "formatters/endian_formatter.h"
+#include "formatters/const_formatter.h"
+#include "formatters/fixed_size_array_formatter.h"
+#include "formatters/inefficient_size_prefix_formatter.h"
+#include "formatters/type_formatter.h"
+#include "formatters/any_formatter.h"
 
-#include "VectorSerializer.h"
-#include "CoutSerializer.h"
-#include "SizeCountingSerializer.h"
+#include "serializers/VectorSerializer.h"
+#include "serializers/CoutSerializer.h"
+#include "serializers/SizeCountingSerializer.h"
 
 #include <cstdint>
 #include <string>
