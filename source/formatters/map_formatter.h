@@ -4,7 +4,7 @@
 ///
 /// map_formatter.h
 ///
-/// This file contains map_formatter that formats std::map as a length field followed by pairs of keys and values.
+/// This file contains map_formatter that formats std::map as a length field followed by keys and values.
 ///
 /// Distributed under Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
 /// (c) 2014 Zbigniew Skowron, zbychs@gmail.com

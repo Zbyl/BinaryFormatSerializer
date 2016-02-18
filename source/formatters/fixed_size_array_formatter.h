@@ -25,7 +25,7 @@ namespace binary_format
 {
 
 template<typename ValueFormatter, int ArraySize = -1>
-class fixed_size_array_formatter : public unified_formatter_base< fixed_size_array_formatter<ValueFormatter, ArraySize> >
+class fixed_size_array_formatter
 {
     ValueFormatter value_formatter;
 
@@ -75,7 +75,7 @@ public:
 };
 
 template<typename ValueFormatter>
-class fixed_size_array_formatter<ValueFormatter, -1> : public unified_formatter_base< fixed_size_array_formatter<ValueFormatter, -1> >
+class fixed_size_array_formatter<ValueFormatter, -1>
 {
     ValueFormatter value_formatter;
 
@@ -130,11 +130,11 @@ fixed_size_array_formatter<ValueFormatter, ArraySize> create_fixed_size_array_fo
 
 /// @brief fixed_size_array_formatter<ValueFormatter, ArraySize> is a verbatim formatter if ValueFormatter is.
 template<typename ValueFormatter, int ArraySize, typename T>
-struct is_verbatim_formatter< fixed_size_array_formatter<ValueFormatter, ArraySize>, T > : public is_verbatim_formatter<ValueFormatter, typename std::decay<T>::type>
+struct is_verbatim_formatter< fixed_size_array_formatter<ValueFormatter, ArraySize>, T > : public is_verbatim_formatter<ValueFormatter, typename std::remove_pointer<typename std::decay<T>::type>::type>
 {};
 
-static_assert(is_verbatim_formatter< fixed_size_array_formatter< verbatim_formatter<4>, 10 >, uint32_t[10] >::value, "fixed_size_array_formatter<verbatim formatter> should be a verbatim formatter.");
-static_assert(!is_verbatim_formatter< fixed_size_array_formatter< int, 10 >, uint32_t[10] >::value, "fixed_size_array_formatter<non-verbatim formatter> should not be a verbatim formatter.");
+static_assert(is_verbatim_formatter< fixed_size_array_formatter< verbatim_formatter<2>, 10 >, uint16_t[10] >::value, "fixed_size_array_formatter<verbatim formatter> should be a verbatim formatter.");
+static_assert(!is_verbatim_formatter< fixed_size_array_formatter< int, 10 >, uint16_t[10] >::value, "fixed_size_array_formatter<non-verbatim formatter> should not be a verbatim formatter.");
 
 } // namespace binary_format
 
