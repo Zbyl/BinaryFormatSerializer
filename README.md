@@ -1,3 +1,8 @@
+Use ArbitraryFormatSerializer
+=============================
+
+Please use ArbitraryFormatSerializer library, BinaryFormatSerializer is deprecated.
+
 BinaryFormatSerializer
 ======================
 
